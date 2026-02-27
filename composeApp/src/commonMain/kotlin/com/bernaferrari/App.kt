@@ -1,13 +1,11 @@
 package com.bernaferrari
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.*
 import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -16,18 +14,9 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -37,40 +26,33 @@ import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material.icons.outlined.Speed
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.materialkolor.DynamicMaterialTheme
 import com.materialkolor.PaletteStyle
 import com.materialkolor.dynamiccolor.ColorSpec
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.sin
 
-private data class ThemeSeed(
+data class ThemeSeed(
     val name: String,
     val color: Color,
     val style: PaletteStyle,
@@ -87,18 +69,20 @@ private val themeSeedOptions = listOf(
 )
 
 @Composable
-@Preview
 fun App() {
-    var showIntro by rememberSaveable { mutableStateOf(false) }
-    var globalAnimationMultiplier by rememberSaveable { mutableFloatStateOf(1f) }
-    var isGloballyWiped by rememberSaveable { mutableStateOf(false) }
-    var isLooping by rememberSaveable { mutableStateOf(false) }
-    var selectedSeedIndex by rememberSaveable { mutableIntStateOf(3) }
+    var showIntro by remember { mutableStateOf(false) }
+    var globalAnimationMultiplier by remember { mutableFloatStateOf(1f) }
+    var isGloballyWiped by remember { mutableStateOf(false) }
+    var isLooping by remember { mutableStateOf(false) }
+    var selectedSeedIndex by remember { mutableIntStateOf(3) }
     val systemDark = isSystemInDarkTheme()
-    var isDark by rememberSaveable { mutableStateOf(systemDark) }
+    var isDark by remember { mutableStateOf(systemDark) }
+    var showHowItWorks by remember { mutableStateOf(false) }
+    var heroSelectedIcon by remember { mutableStateOf<MaterialWipeIconPair?>(null) }
+    val scrollState = rememberScrollState()
 
     LaunchedEffect(Unit) {
-        delay(110)
+        delay(150)
         showIntro = true
     }
 
@@ -127,6 +111,17 @@ fun App() {
     val uriHandler = LocalUriHandler.current
     val isSlowMode = globalAnimationMultiplier > 1f
 
+    // Handle scroll to grid using coroutine
+    val scope = rememberCoroutineScope()
+    val scrollToGrid: () -> Unit = {
+        scope.launch {
+            scrollState.animateScrollTo(520)
+        }
+    }
+
+    // Show title in top bar when scrolled past hero
+    val showTitleInTopBar = scrollState.value > 400
+
     DynamicMaterialTheme(
         seedColor = selectedSeed.color,
         isDark = isDark,
@@ -134,176 +129,238 @@ fun App() {
         style = selectedSeed.style,
         animate = true,
     ) {
-        Surface(
-            color = MaterialTheme.colorScheme.background,
-            modifier = Modifier.fillMaxSize(),
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .safeDrawingPadding(),
-            ) {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
+            // Subtle animated background
+            AnimatedMeshBackground(selectedSeed.color, isDark)
+
+            Scaffold(
+                topBar = {
+                    AnimatedTopBar(
+                        showTitle = showTitleInTopBar,
+                        isDark = isDark,
+                        onToggleDark = { isDark = !isDark },
+                        onOpenGitHub = { uriHandler.openUri("https://github.com/bernaferrari") }
+                    )
+                },
+                containerColor = Color.Transparent
+            ) { paddingValues ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
                 ) {
-                    // Compact SAAS header
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(scrollState)
+                    ) {
+                        // Hero Section
+                        AnimatedVisibility(
+                            visible = showIntro,
+                            enter = fadeIn(tween(500, easing = EaseOut)) +
+                                    slideInVertically(tween(500, easing = EaseOut)) { it / 4 }
+                        ) {
+                            HeroSection(
+                                selectedSeed = selectedSeed,
+                                onOpenHowItWorks = { showHowItWorks = true },
+                                onScrollToGrid = scrollToGrid,
+                                onIconClick = { iconPair ->
+                                    heroSelectedIcon = iconPair
+                                }
+                            )
+                        }
+
+                        // Main Content Grid
+                        DiagonalWipeIconGridDemo(
+                            animationMultiplier = globalAnimationMultiplier,
+                            allIconsWiped = isGloballyWiped,
+                            isLooping = isLooping,
+                            accentColor = selectedSeed.color,
+                            externalSelectedIcon = heroSelectedIcon,
+                            onExternalSelectedIconConsumed = { heroSelectedIcon = null },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        // Footer
+                        Footer()
+
+                        // Space for bottom toolbar
+                        Spacer(modifier = Modifier.height(100.dp))
+                    }
+
+                    // Floating bottom toolbar
                     AnimatedVisibility(
                         visible = showIntro,
-                        enter = fadeIn(tween(320, easing = FastOutSlowInEasing)) +
-                                slideInVertically(
-                                    tween(
-                                        320,
-                                        easing = FastOutSlowInEasing
-                                    )
-                                ) { it / 4 },
+                        enter = fadeIn(tween(400, delayMillis = 600)) +
+                                slideInVertically(tween(400, delayMillis = 600)) { it / 2 },
+                        modifier = Modifier.align(Alignment.BottomCenter)
                     ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 32.dp)
-                                .padding(top = 24.dp, bottom = 16.dp),
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                            ) {
-                                Column {
-                                    Text(
-                                        text = "Diagonal Wipe Icons",
-                                        style = MaterialTheme.typography.titleLarge.copy(
-                                            fontWeight = FontWeight.SemiBold
-                                        ),
-                                        color = MaterialTheme.colorScheme.onBackground,
-                                    )
-                                    Text(
-                                        text = "Elegant icon transitions for Material Design",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                                }
-
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ) {
-                                    IconButton(
-                                        onClick = { uriHandler.openUri("https://github.com/bernaferrari") },
-                                        modifier = Modifier.pointerHoverIcon(PointerIcon.Hand),
-                                    ) {
-                                        Icon(
-                                            imageVector = GitHubIcon,
-                                            contentDescription = "GitHub",
-                                            modifier = Modifier.size(22.dp),
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        )
-                                    }
-
-                                    IconButton(
-                                        onClick = { isDark = !isDark },
-                                        modifier = Modifier.pointerHoverIcon(PointerIcon.Hand),
-                                    ) {
-                                        Icon(
-                                            imageVector = if (isDark) Icons.Outlined.LightMode
-                                            else Icons.Outlined.DarkMode,
-                                            contentDescription = if (isDark) "Light mode" else "Dark mode",
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        )
-                                    }
-                                }
+                        BottomToolbar(
+                            themeSeedOptions = themeSeedOptions,
+                            selectedSeedIndex = selectedSeedIndex,
+                            onSeedSelected = { selectedSeedIndex = it },
+                            isSlowMode = isSlowMode,
+                            onToggleSlowMode = {
+                                globalAnimationMultiplier = if (isSlowMode) 1f else SlowAnimationMultiplier
+                            },
+                            isLooping = isLooping,
+                            onToggleLoop = {
+                                isLooping = !isLooping
+                                if (!isLooping) isGloballyWiped = false
                             }
-                        }
+                        )
                     }
+                }
+            }
 
-                    // Main Content Grid
-                    DiagonalWipeIconGridDemo(
-                        animationMultiplier = globalAnimationMultiplier,
-                        allIconsWiped = isGloballyWiped,
-                        isLooping = isLooping,
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxWidth(),
+            // How it works dialog
+            if (showHowItWorks) {
+                HowItWorksDialog(
+                    animationMultiplier = globalAnimationMultiplier,
+                    direction = WipeDirection.TopLeftToBottomRight,
+                    onDirectionChange = {},
+                    onDismiss = { showHowItWorks = false }
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AnimatedTopBar(
+    showTitle: Boolean,
+    isDark: Boolean,
+    onToggleDark: () -> Unit,
+    onOpenGitHub: () -> Unit,
+) {
+    TopAppBar(
+        title = {
+            AnimatedVisibility(
+                visible = showTitle,
+                enter = fadeIn(tween(200)) + slideInVertically(tween(200)) { it / 2 },
+                exit = fadeOut(tween(150)) + slideOutVertically(tween(150)) { it / 2 }
+            ) {
+                Text(
+                    text = "Diagonal Wipe Icons",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.SemiBold
+                    )
+                )
+            }
+        },
+        navigationIcon = { },
+        actions = {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(end = 8.dp)
+            ) {
+                IconButton(onClick = onOpenGitHub) {
+                    Icon(
+                        imageVector = GitHubIcon,
+                        contentDescription = "GitHub",
+                        modifier = Modifier.size(22.dp),
+                        tint = MaterialTheme.colorScheme.onBackground
                     )
                 }
-
-                // Floating toolbar - minimal, elevated
-                AnimatedVisibility(
-                    visible = showIntro,
-                    enter = fadeIn(tween(360, 70, FastOutSlowInEasing)) +
-                            slideInVertically(tween(360, 70, FastOutSlowInEasing)) { it / 8 },
-                    modifier = Modifier.align(Alignment.BottomCenter),
-                ) {
-                    Surface(
-                        shape = RoundedCornerShape(20.dp),
-                        shadowElevation = 4.dp,
-                        tonalElevation = 1.dp,
-                        color = MaterialTheme.colorScheme.surface,
-                        modifier = Modifier.padding(bottom = 24.dp),
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 14.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        ) {
-                            // Theme colors - alive and responsive
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                themeSeedOptions.forEachIndexed { index, seed ->
-                                    ColorDot(
-                                        color = seed.color,
-                                        isSelected = index == selectedSeedIndex,
-                                        onClick = { selectedSeedIndex = index },
-                                    )
-                                }
-                            }
-
-                            Spacer(
-                                modifier = Modifier
-                                    .width(1.dp)
-                                    .height(24.dp)
-                                    .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
-                            )
-
-                            // Animation controls - custom styled buttons
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                            ) {
-                                ToolbarControlButton(
-                                    selected = isSlowMode,
-                                    onClick = {
-                                        globalAnimationMultiplier =
-                                            if (isSlowMode) 1f else SlowAnimationMultiplier
-                                    },
-                                    label = if (isSlowMode) "0.5x" else "1x",
-                                    icon = Icons.Outlined.Speed,
-                                )
-
-                                ToolbarControlButton(
-                                    selected = isLooping,
-                                    onClick = {
-                                        isLooping = !isLooping
-                                        if (!isLooping) isGloballyWiped = false
-                                    },
-                                    label = "Loop",
-                                    icon = if (isLooping) Icons.Filled.Stop else Icons.Filled.PlayArrow,
-                                )
-                            }
-                        }
-                    }
+                
+                IconButton(onClick = onToggleDark) {
+                    Icon(
+                        imageVector = if (isDark) Icons.Outlined.LightMode else Icons.Outlined.DarkMode,
+                        contentDescription = if (isDark) "Light mode" else "Dark mode",
+                        tint = MaterialTheme.colorScheme.onBackground
+                    )
                 }
+            }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = if (showTitle) 
+                MaterialTheme.colorScheme.background.copy(alpha = 0.95f)
+            else 
+                Color.Transparent
+        )
+    )
+}
+
+@Composable
+private fun BottomToolbar(
+    themeSeedOptions: List<ThemeSeed>,
+    selectedSeedIndex: Int,
+    onSeedSelected: (Int) -> Unit,
+    isSlowMode: Boolean,
+    onToggleSlowMode: () -> Unit,
+    isLooping: Boolean,
+    onToggleLoop: () -> Unit,
+) {
+    Surface(
+        shape = RoundedCornerShape(20.dp),
+        shadowElevation = 4.dp,
+        tonalElevation = 1.dp,
+        color = MaterialTheme.colorScheme.surface,
+        modifier = Modifier.padding(bottom = 24.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(horizontal = 20.dp, vertical = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(20.dp)
+        ) {
+            // Theme colors
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                themeSeedOptions.forEachIndexed { index, seed ->
+                    ColorDot(
+                        color = seed.color,
+                        isSelected = index == selectedSeedIndex,
+                        onClick = { onSeedSelected(index) }
+                    )
+                }
+            }
+
+            // Divider
+            Box(
+                modifier = Modifier
+                    .height(24.dp)
+                    .width(1.dp)
+                    .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+            )
+
+            // Controls
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                ToolbarButton(
+                    selected = isSlowMode,
+                    onClick = onToggleSlowMode,
+                    icon = Icons.Outlined.Speed,
+                    label = if (isSlowMode) "0.5x" else "1x"
+                )
+
+                ToolbarButton(
+                    selected = isLooping,
+                    onClick = onToggleLoop,
+                    icon = if (isLooping) Icons.Filled.Stop else Icons.Filled.PlayArrow,
+                    label = if (isLooping) "Stop" else "Loop"
+                )
             }
         }
     }
 }
 
 @Composable
-private fun ToolbarControlButton(
+private fun ToolbarButton(
     selected: Boolean,
     onClick: () -> Unit,
+    icon: ImageVector,
     label: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
@@ -312,43 +369,44 @@ private fun ToolbarControlButton(
     val scale by animateFloatAsState(
         targetValue = if (isPressed) 0.95f else 1f,
         animationSpec = spring(stiffness = Spring.StiffnessMedium),
+        label = "buttonScale"
     )
 
+    val containerColor = when {
+        selected -> MaterialTheme.colorScheme.primaryContainer
+        isHovered -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f)
+        else -> Color.Transparent
+    }
+
     Surface(
-        shape = RoundedCornerShape(10.dp),
-        color = when {
-            selected -> MaterialTheme.colorScheme.primaryContainer
-            isHovered -> MaterialTheme.colorScheme.surfaceVariant
-            else -> MaterialTheme.colorScheme.surface
-        },
-        tonalElevation = if (isHovered) 2.dp else 0.dp,
-        shadowElevation = 0.dp,
+        shape = RoundedCornerShape(12.dp),
+        color = containerColor,
         modifier = Modifier
-            .height(40.dp)
             .graphicsLayer { scaleX = scale; scaleY = scale }
             .pointerHoverIcon(PointerIcon.Hand)
-            .hoverable(interactionSource)
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
-                onClick = onClick,
+                onClick = onClick
             ),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(6.dp),
-            modifier = Modifier.padding(horizontal = 14.dp),
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
                 modifier = Modifier.size(18.dp),
-                tint = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                tint = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
             )
             Text(
                 text = label,
-                style = MaterialTheme.typography.labelMedium,
-                color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.labelMedium.copy(
+                    fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium
+                ),
+                color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
@@ -364,12 +422,9 @@ private fun ColorDot(
     val isHovered by interactionSource.collectIsHoveredAsState()
     val isPressed by interactionSource.collectIsPressedAsState()
 
-    // Selected state: larger and more prominent
-    // Hover: subtle grow
-    // Press: gentle shrink
     val scale by animateFloatAsState(
         targetValue = when {
-            isPressed -> 0.95f
+            isPressed -> 0.9f
             isSelected -> 1.12f
             isHovered -> 1.06f
             else -> 1f
@@ -377,16 +432,8 @@ private fun ColorDot(
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
             stiffness = Spring.StiffnessMedium
-        )
-    )
-
-    // Animated border width for smooth selection transition
-    val borderWidth by animateFloatAsState(
-        targetValue = if (isSelected) 3f else 0f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioLowBouncy,
-            stiffness = Spring.StiffnessLow
-        )
+        ),
+        label = "colorDotScale"
     )
 
     Box(
@@ -399,29 +446,96 @@ private fun ColorDot(
             .then(
                 if (isSelected) {
                     Modifier.border(
-                        width = 3.dp,
-                        color = Color.White,
+                        width = 2.5.dp,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
                         shape = CircleShape
                     )
-                } else {
-                    Modifier
-                }
+                } else Modifier
             )
             .pointerHoverIcon(PointerIcon.Hand)
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
-                onClick = onClick,
+                onClick = onClick
             )
     ) {
         if (isSelected) {
             Icon(
                 imageVector = Icons.Filled.Check,
                 contentDescription = null,
-                modifier = Modifier.size(16.dp),
-                tint = Color.White
+                modifier = Modifier.size(14.dp),
+                tint = if (color.luminance() > 0.5f) Color.Black else Color.White
             )
         }
+    }
+}
+
+@Composable
+private fun AnimatedMeshBackground(seedColor: Color, isDark: Boolean) {
+    val infiniteTransition = rememberInfiniteTransition(label = "mesh")
+
+    val offset1 by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 2 * PI.toFloat(),
+        animationSpec = infiniteRepeatable(
+            animation = tween(35000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "mesh1"
+    )
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .drawBehind {
+                val baseColor = if (isDark) Color(0xFF0D0D0D) else Color(0xFFFAFAFA)
+                drawRect(baseColor)
+
+                // Single large subtle orb
+                val centerX = size.width / 2
+                val centerY = size.height / 3
+
+                drawCircle(
+                    brush = Brush.radialGradient(
+                        colors = listOf(
+                            seedColor.copy(alpha = 0.04f),
+                            Color.Transparent
+                        ),
+                        center = Offset(
+                            centerX + cos(offset1) * 100f,
+                            centerY + sin(offset1) * 50f
+                        ),
+                        radius = 500f
+                    ),
+                    radius = 500f,
+                    center = Offset(
+                        centerX + cos(offset1) * 100f,
+                        centerY + sin(offset1) * 50f
+                    )
+                )
+            }
+    )
+}
+
+@Composable
+private fun Footer() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 48.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            text = "Diagonal Wipe Icons",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(
+            text = "Built with Compose Multiplatform",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+        )
     }
 }
 
@@ -435,7 +549,6 @@ private val GitHubIcon: ImageVector
         viewportHeight = 24f
     ).apply {
         path(fill = SolidColor(Color(0xFF000000))) {
-            // GitHub logo path
             moveTo(12f, 0f)
             curveTo(5.374f, 0f, 0f, 5.373f, 0f, 12f)
             curveTo(0f, 17.302f, 3.438f, 21.8f, 8.207f, 23.387f)
@@ -465,3 +578,11 @@ private val GitHubIcon: ImageVector
             close()
         }
     }.build()
+
+// Import necessary extensions
+private fun Color.luminance(): Float {
+    val r = red
+    val g = green
+    val b = blue
+    return 0.2126f * r + 0.7152f * g + 0.0722f * b
+}

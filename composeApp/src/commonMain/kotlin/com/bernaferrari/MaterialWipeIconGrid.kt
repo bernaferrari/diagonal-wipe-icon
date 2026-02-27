@@ -84,6 +84,15 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.FlowRowOverflow
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.blur
+import kotlin.math.min
 import androidx.compose.ui.graphics.ClipOp
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Brush
@@ -95,13 +104,13 @@ import androidx.compose.ui.zIndex
 import kotlinx.coroutines.delay
 import androidx.compose.runtime.setValue
 
-private data class MaterialWipeIconPair(
+data class MaterialWipeIconPair(
     val label: String,
     val enabledIcon: ImageVector,
     val disabledIcon: ImageVector,
 )
 
-private data class MaterialWipeIconSection(
+data class MaterialWipeIconSection(
     val title: String,
     val subtitle: String,
     val icons: List<MaterialWipeIconPair>,
@@ -269,63 +278,90 @@ private val howItWorksDirectionLabels =
 
 internal val materialWipeIconCatalogSize = iconSections.sumOf { it.icons.size }
 
-private fun MaterialWipeIconLabel(rawLabel: String): String = rawLabel
+internal fun MaterialWipeIconLabel(rawLabel: String): String = rawLabel
     .removeSuffix(" Off")
     .removeSuffix(" Disabled")
     .removeSuffix(" off")
     .removeSuffix(" disabled")
 
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun SectionWithStaggeredGrid(
+    section: MaterialWipeIconSection,
+    sectionIndex: Int,
+    animationMultiplier: Float,
+    allIconsWiped: Boolean,
+    isLooping: Boolean,
+    accentColor: Color,
+    onIconSelected: (MaterialWipeIconPair) -> Unit,
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+        // Section header with dramatic typography
+        MaterialWipeIconSectionHeaderV2(section, accentColor)
 
+        // Staggered grid using FlowRow
+        FlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            maxItemsInEachRow = 6,
+            overflow = FlowRowOverflow.Visible
+        ) {
+            section.icons.forEachIndexed { index, iconPair ->
+                DiagonalWipeIconGridItemV2(
+                    iconPair = iconPair,
+                    animationMultiplier = animationMultiplier,
+                    allIconsWiped = allIconsWiped,
+                    isLooping = isLooping,
+                    accentColor = accentColor,
+                    onOpen = { onIconSelected(iconPair) }
+                )
+            }
+        }
+    }
+}
+
+
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun DiagonalWipeIconGridDemo(
     modifier: Modifier = Modifier,
     animationMultiplier: Float = 1f,
     allIconsWiped: Boolean = false,
     isLooping: Boolean = false,
+    accentColor: Color = Color(0xFF007FFF),
+    externalSelectedIcon: MaterialWipeIconPair? = null,
+    onExternalSelectedIconConsumed: () -> Unit = {},
 ) {
     var selectedIcon by remember { mutableStateOf<MaterialWipeIconPair?>(null) }
-    var showHowItWorksDialog by remember { mutableStateOf(false) }
-    var howItWorksDirection by remember { mutableStateOf(WipeDirection.TopLeftToBottomRight) }
 
-    LazyVerticalGrid(
-        columns = GridCells.Adaptive(minSize = 170.dp),
-        state = rememberLazyGridState(),
-        modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(start = 48.dp, end = 48.dp, top = 24.dp, bottom = 100.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        item(span = { GridItemSpan(maxLineSpan) }) {
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center,
-            ) {
-                HowItWorksTeaserCard(
-                    animationMultiplier = animationMultiplier,
-                    direction = howItWorksDirection,
-                    onDirectionChange = { howItWorksDirection = it },
-                    onOpenDialog = { showHowItWorksDialog = true },
-                )
-            }
+    // Handle external icon selection from hero
+    LaunchedEffect(externalSelectedIcon) {
+        externalSelectedIcon?.let {
+            selectedIcon = it
+            onExternalSelectedIconConsumed()
         }
-        iconSections.forEach { section ->
-            item(span = { GridItemSpan(maxLineSpan) }) {
-                Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    MaterialWipeIconSectionHeader(section)
-                }
-            }
-            items(section.icons) { iconPair ->
-                DiagonalWipeIconGridItem(
-                    iconPair = iconPair,
-                    animationMultiplier = animationMultiplier,
-                    allIconsWiped = allIconsWiped,
-                    isLooping = isLooping,
-                    onOpen = { selectedIcon = iconPair },
-                )
-            }
+    }
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp, vertical = 32.dp),
+        verticalArrangement = Arrangement.spacedBy(48.dp)
+    ) {
+        iconSections.forEachIndexed { sectionIndex, section ->
+            SectionWithStaggeredGrid(
+                section = section,
+                sectionIndex = sectionIndex,
+                animationMultiplier = animationMultiplier,
+                allIconsWiped = allIconsWiped,
+                isLooping = isLooping,
+                accentColor = accentColor,
+                onIconSelected = { selectedIcon = it }
+            )
         }
     }
 
@@ -334,15 +370,6 @@ fun DiagonalWipeIconGridDemo(
             iconPair = icon,
             baseAnimationMultiplier = animationMultiplier,
             onDismiss = { selectedIcon = null },
-        )
-    }
-
-    if (showHowItWorksDialog) {
-        HowItWorksDialog(
-            animationMultiplier = animationMultiplier,
-            direction = howItWorksDirection,
-            onDirectionChange = { howItWorksDirection = it },
-            onDismiss = { showHowItWorksDialog = false },
         )
     }
 }
@@ -434,7 +461,7 @@ private fun HowItWorksTeaserCard(
 }
 
 @Composable
-private fun HowItWorksDialog(
+internal fun HowItWorksDialog(
     animationMultiplier: Float,
     direction: WipeDirection,
     onDirectionChange: (WipeDirection) -> Unit,
@@ -1763,3 +1790,190 @@ private fun toIconSymbol(raw: String): String = raw
         word.lowercase()
             .replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
     }
+
+// ============================================
+// NEW V2 COMPONENTS WITH GLASSMORPHISM & GLOW
+// ============================================
+
+@Composable
+internal fun MaterialWipeIconSectionHeaderV2(
+    section: MaterialWipeIconSection,
+    accentColor: Color
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = section.title,
+            style = MaterialTheme.typography.headlineSmall.copy(
+                fontWeight = FontWeight.Bold,
+                letterSpacing = (-0.5).sp
+            ),
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = section.subtitle,
+            style = MaterialTheme.typography.bodyLarge.copy(
+                fontWeight = FontWeight.Normal
+            ),
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
+internal fun DiagonalWipeIconGridItemV2(
+    iconPair: MaterialWipeIconPair,
+    animationMultiplier: Float,
+    allIconsWiped: Boolean,
+    isLooping: Boolean,
+    accentColor: Color,
+    onOpen: () -> Unit,
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isHovered by interactionSource.collectIsHoveredAsState()
+    val isPressed by interactionSource.collectIsPressedAsState()
+
+    val enableDuration =
+        scaledDuration(DiagonalWipeIconDefaults.WipeInDurationMillis, animationMultiplier)
+    val disableDuration =
+        scaledDuration(DiagonalWipeIconDefaults.WipeOutDurationMillis, animationMultiplier)
+
+    // Subtle scale animation
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.97f else if (isHovered) 1.02f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioNoBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
+        label = "cardScale"
+    )
+
+    // Subtle elevation
+    val elevation by animateDpAsState(
+        targetValue = when {
+            isPressed -> 2.dp
+            isHovered -> 4.dp
+            else -> 0.dp
+        },
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioNoBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
+        label = "cardElevation"
+    )
+
+    // Background color - simpler, no heavy glassmorphism
+    val backgroundColor by animateColorAsState(
+        targetValue = when {
+            isPressed -> MaterialTheme.colorScheme.surfaceVariant
+            isHovered -> MaterialTheme.colorScheme.surface
+            else -> MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)
+        },
+        animationSpec = tween(150),
+        label = "cardBackground"
+    )
+
+    // Border color - invisible by default, visible on interaction
+    val borderColor by animateColorAsState(
+        targetValue = when {
+            isPressed -> accentColor.copy(alpha = 0.5f)
+            isHovered -> accentColor.copy(alpha = 0.3f)
+            else -> Color.Transparent
+        },
+        animationSpec = tween(150),
+        label = "borderColor"
+    )
+
+    // Simple shadow/glow without blur
+    val shadowAlpha by animateFloatAsState(
+        targetValue = if (isHovered) 0.15f else 0f,
+        animationSpec = tween(200),
+        label = "shadowAlpha"
+    )
+
+    Surface(
+        shape = RoundedCornerShape(20.dp),
+        color = backgroundColor,
+        tonalElevation = if (isHovered) 1.dp else 0.dp,
+        shadowElevation = elevation,
+        modifier = Modifier
+            .width(150.dp)
+            .height(170.dp)
+            .graphicsLayer { scaleX = scale; scaleY = scale }
+            .border(
+                width = 1.dp,
+                color = borderColor,
+                shape = RoundedCornerShape(20.dp)
+            )
+            .pointerHoverIcon(PointerIcon.Hand)
+            .hoverable(interactionSource)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onOpen,
+            ),
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            // Icon container - simpler, no heavy gradient
+            val iconBgColor by animateColorAsState(
+                targetValue = when {
+                    isPressed -> accentColor.copy(alpha = 0.2f)
+                    isHovered -> accentColor.copy(alpha = 0.15f)
+                    else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                },
+                animationSpec = tween(150),
+                label = "iconBgColor"
+            )
+
+            Box(
+                modifier = Modifier
+                    .size(80.dp)
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(iconBgColor),
+                contentAlignment = Alignment.Center
+            ) {
+                DiagonalWipeIcon(
+                    isWiped = if (isLooping) allIconsWiped else isHovered,
+                    baseIcon = iconPair.enabledIcon,
+                    wipedIcon = iconPair.disabledIcon,
+                    baseTint = MaterialTheme.colorScheme.primary,
+                    wipedTint = MaterialTheme.colorScheme.secondary,
+                    contentDescription = MaterialWipeIconLabel(iconPair.label),
+                    modifier = Modifier.size(40.dp),
+                    motion = DiagonalWipeIconDefaults.tween(
+                        wipeInDurationMillis = enableDuration,
+                        wipeOutDurationMillis = disableDuration,
+                    ),
+                )
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // Label - always visible, just changes weight
+            Text(
+                text = MaterialWipeIconLabel(iconPair.label),
+                style = MaterialTheme.typography.labelLarge.copy(
+                    fontWeight = if (isHovered) FontWeight.SemiBold else FontWeight.Medium
+                ),
+                color = when {
+                    isPressed -> accentColor
+                    isHovered -> MaterialTheme.colorScheme.onSurface
+                    else -> MaterialTheme.colorScheme.onSurfaceVariant
+                },
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 12.dp)
+            )
+        }
+    }
+}
