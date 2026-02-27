@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -88,6 +89,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.zIndex
 import kotlinx.coroutines.delay
@@ -110,75 +112,136 @@ private val coreMaterialWipeIconCatalog = listOf(
     MaterialWipeIconPair("Bedtime Off", Icons.Outlined.Bedtime, Icons.Outlined.BedtimeOff),
     MaterialWipeIconPair("Cloud Off", Icons.Outlined.Cloud, Icons.Outlined.CloudOff),
     MaterialWipeIconPair("Code Off", Icons.Outlined.Code, Icons.Outlined.CodeOff),
-    MaterialWipeIconPair("Credit Card Off", Icons.Outlined.CreditCard, Icons.Outlined.CreditCardOff),
-    MaterialWipeIconPair("Developer Board Off", Icons.Outlined.DeveloperBoard, Icons.Outlined.DeveloperBoardOff),
-    MaterialWipeIconPair("Do Not Disturb Off", Icons.Outlined.DoNotDisturb, Icons.Outlined.DoNotDisturbOff),
+    MaterialWipeIconPair(
+        "Credit Card Off",
+        Icons.Outlined.CreditCard,
+        Icons.Outlined.CreditCardOff
+    ),
+    MaterialWipeIconPair(
+        "Developer Board Off",
+        Icons.Outlined.DeveloperBoard,
+        Icons.Outlined.DeveloperBoardOff
+    ),
+    MaterialWipeIconPair(
+        "Do Not Disturb Off",
+        Icons.Outlined.DoNotDisturb,
+        Icons.Outlined.DoNotDisturbOff
+    ),
     MaterialWipeIconPair("Explore Off", Icons.Outlined.Explore, Icons.Outlined.ExploreOff),
-    MaterialWipeIconPair("File Download Off", Icons.Outlined.FileDownload, Icons.Outlined.FileDownloadOff),
+    MaterialWipeIconPair(
+        "File Download Off",
+        Icons.Outlined.FileDownload,
+        Icons.Outlined.FileDownloadOff
+    ),
     MaterialWipeIconPair("Filter Alt Off", Icons.Outlined.FilterAlt, Icons.Outlined.FilterAltOff),
-    MaterialWipeIconPair("Filter List Off", Icons.Outlined.FilterList, Icons.Outlined.FilterListOff),
+    MaterialWipeIconPair(
+        "Filter List Off",
+        Icons.Outlined.FilterList,
+        Icons.Outlined.FilterListOff
+    ),
     MaterialWipeIconPair("Folder Off", Icons.Outlined.Folder, Icons.Outlined.FolderOff),
-    MaterialWipeIconPair("Font Download Off", Icons.Outlined.FontDownload, Icons.Outlined.FontDownloadOff),
+    MaterialWipeIconPair(
+        "Font Download Off",
+        Icons.Outlined.FontDownload,
+        Icons.Outlined.FontDownloadOff
+    ),
     MaterialWipeIconPair("Headset Off", Icons.Outlined.Headset, Icons.Outlined.HeadsetOff),
     MaterialWipeIconPair("Hls Off", Icons.Outlined.Hls, Icons.Outlined.HlsOff),
-    MaterialWipeIconPair("Invert Colors Off", Icons.Outlined.InvertColors, Icons.Outlined.InvertColorsOff),
+    MaterialWipeIconPair(
+        "Invert Colors Off",
+        Icons.Outlined.InvertColors,
+        Icons.Outlined.InvertColorsOff
+    ),
     MaterialWipeIconPair("Key Off", Icons.Outlined.Key, Icons.Outlined.KeyOff),
-    MaterialWipeIconPair("Label Off", Icons.AutoMirrored.Outlined.Label,
+    MaterialWipeIconPair(
+        "Label Off", Icons.AutoMirrored.Outlined.Label,
         Icons.AutoMirrored.Outlined.LabelOff
     ),
     MaterialWipeIconPair("Link Off", Icons.Outlined.Link, Icons.Outlined.LinkOff),
     MaterialWipeIconPair("Mic Off", Icons.Outlined.Mic, Icons.Outlined.MicOff),
-    MaterialWipeIconPair("Open In New Off",
-        Icons.AutoMirrored.Outlined.OpenInNew, Icons.Outlined.OpenInNewOff),
+    MaterialWipeIconPair(
+        "Open In New Off",
+        Icons.AutoMirrored.Outlined.OpenInNew, Icons.Outlined.OpenInNewOff
+    ),
     MaterialWipeIconPair("Piano Off", Icons.Outlined.Piano, Icons.Outlined.PianoOff),
     MaterialWipeIconPair("Power Off", Icons.Outlined.Power, Icons.Outlined.PowerOff),
     MaterialWipeIconPair("Public Off", Icons.Outlined.Public, Icons.Outlined.PublicOff),
     MaterialWipeIconPair("Report Off", Icons.Outlined.Report, Icons.Outlined.ReportOff),
     MaterialWipeIconPair("Sensors Off", Icons.Outlined.Sensors, Icons.Outlined.SensorsOff),
-    MaterialWipeIconPair("Speaker Notes Off",
-        Icons.AutoMirrored.Outlined.SpeakerNotes, Icons.Outlined.SpeakerNotesOff),
+    MaterialWipeIconPair(
+        "Speaker Notes Off",
+        Icons.AutoMirrored.Outlined.SpeakerNotes, Icons.Outlined.SpeakerNotesOff
+    ),
     MaterialWipeIconPair("Subtitles Off", Icons.Outlined.Subtitles, Icons.Outlined.SubtitlesOff),
     MaterialWipeIconPair("Timer Off", Icons.Outlined.Timer, Icons.Outlined.TimerOff),
     MaterialWipeIconPair("Videocam Off", Icons.Outlined.Videocam, Icons.Outlined.VideocamOff),
     MaterialWipeIconPair("Visibility Off", Icons.Outlined.Visibility, Icons.Outlined.VisibilityOff),
     MaterialWipeIconPair("Wifi Off", Icons.Outlined.Wifi, Icons.Outlined.WifiOff),
-    MaterialWipeIconPair("Bluetooth Disabled", Icons.Outlined.Bluetooth, Icons.Outlined.BluetoothDisabled),
-    MaterialWipeIconPair("Closed Caption Disabled", Icons.Outlined.ClosedCaption, Icons.Outlined.ClosedCaptionDisabled),
+    MaterialWipeIconPair(
+        "Bluetooth Disabled",
+        Icons.Outlined.Bluetooth,
+        Icons.Outlined.BluetoothDisabled
+    ),
+    MaterialWipeIconPair(
+        "Closed Caption Disabled",
+        Icons.Outlined.ClosedCaption,
+        Icons.Outlined.ClosedCaptionDisabled
+    ),
     MaterialWipeIconPair("Domain Disabled", Icons.Outlined.Domain, Icons.Outlined.DomainDisabled),
     MaterialWipeIconPair("No Luggage", Icons.Outlined.Luggage, Icons.Outlined.NoLuggage),
     MaterialWipeIconPair("No Stroller", Icons.Outlined.Stroller, Icons.Outlined.NoStroller),
-    MaterialWipeIconPair("Person Add Disabled", Icons.Outlined.PersonAdd, Icons.Outlined.PersonAddDisabled),
+    MaterialWipeIconPair(
+        "Person Add Disabled",
+        Icons.Outlined.PersonAdd,
+        Icons.Outlined.PersonAddDisabled
+    ),
     MaterialWipeIconPair("Print Disabled", Icons.Outlined.Print, Icons.Outlined.PrintDisabled),
 )
 
 private val knownProblemsMaterialWipeIconCatalog = listOf(
     MaterialWipeIconPair("Group Off", Icons.Outlined.Group, Icons.Outlined.GroupOff),
-    MaterialWipeIconPair("Content Paste Off", Icons.Outlined.ContentPaste, Icons.Outlined.ContentPasteOff),
+    MaterialWipeIconPair(
+        "Content Paste Off",
+        Icons.Outlined.ContentPaste,
+        Icons.Outlined.ContentPasteOff
+    ),
     MaterialWipeIconPair("Directions Off", Icons.Outlined.Directions, Icons.Outlined.DirectionsOff),
     MaterialWipeIconPair("Extension Off", Icons.Outlined.Extension, Icons.Outlined.ExtensionOff),
     MaterialWipeIconPair("Hearing", Icons.Outlined.Hearing, Icons.Outlined.HearingDisabled),
     MaterialWipeIconPair("Near Me Disabled", Icons.Outlined.NearMe, Icons.Outlined.NearMeDisabled),
-    MaterialWipeIconPair("No Meeting Room", Icons.Outlined.MeetingRoom, Icons.Outlined.NoMeetingRoom),
+    MaterialWipeIconPair(
+        "No Meeting Room",
+        Icons.Outlined.MeetingRoom,
+        Icons.Outlined.NoMeetingRoom
+    ),
     MaterialWipeIconPair("Sync Disabled", Icons.Outlined.Sync, Icons.Outlined.SyncDisabled),
     MaterialWipeIconPair("Update Disabled", Icons.Outlined.Update, Icons.Outlined.UpdateDisabled),
     MaterialWipeIconPair("Usb Off", Icons.Outlined.Usb, Icons.Outlined.UsbOff),
     MaterialWipeIconPair("Tv Off", Icons.Outlined.Tv, Icons.Outlined.TvOff),
-    MaterialWipeIconPair("Videogame Asset Off", Icons.Outlined.VideogameAsset, Icons.Outlined.VideogameAssetOff),
+    MaterialWipeIconPair(
+        "Videogame Asset Off",
+        Icons.Outlined.VideogameAsset,
+        Icons.Outlined.VideogameAssetOff
+    ),
     MaterialWipeIconPair("Vpn Key Off", Icons.Outlined.VpnKey, Icons.Outlined.VpnKeyOff),
     MaterialWipeIconPair("Watch Off", Icons.Outlined.Watch, Icons.Outlined.WatchOff),
     MaterialWipeIconPair("Web Asset Off", Icons.Outlined.WebAsset, Icons.Outlined.WebAssetOff),
-    MaterialWipeIconPair("Wifi Tethering Off", Icons.Outlined.WifiTethering, Icons.Outlined.WifiTetheringOff),
+    MaterialWipeIconPair(
+        "Wifi Tethering Off",
+        Icons.Outlined.WifiTethering,
+        Icons.Outlined.WifiTetheringOff
+    ),
 )
 
 private val iconSections = listOf(
     MaterialWipeIconSection(
-        title = "Core icon transitions",
-        subtitle = "These samples currently animate reliably.",
+        title = "Ready to use",
+        subtitle = "These icon pairs morph seamlessly",
         icons = coreMaterialWipeIconCatalog,
     ),
     MaterialWipeIconSection(
-        title = "Imperfect transitions",
-        subtitle = "Some are imperfect due to icon-size/viewport (like rotating or changing the size).",
+        title = "Needs refinement",
+        subtitle = "There are some size and rotation differences.",
         icons = knownProblemsMaterialWipeIconCatalog,
     ),
 )
@@ -201,7 +264,8 @@ private val howItWorksDirectionOptions = listOf(
     WipeDirectionOption(WipeDirection.RightToLeft, "Right to left"),
 )
 
-private val howItWorksDirectionLabels = howItWorksDirectionOptions.associate { it.direction to it.label }
+private val howItWorksDirectionLabels =
+    howItWorksDirectionOptions.associate { it.direction to it.label }
 
 internal val materialWipeIconCatalogSize = iconSections.sumOf { it.icons.size }
 
@@ -417,7 +481,7 @@ private fun HowItWorksDialog(
                     animationMultiplier = SlowAnimationMultiplier,
                 )
                 Text(
-                    text = "The same moving boundary clips both layers, so reveal/hide stays perfectly synchronized.",
+                    text = "One mask controls both icons, so they always stay in sync.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -447,8 +511,16 @@ private fun HowItWorksFlow(
     val blockedColor = MaterialTheme.colorScheme.secondary
     val maskBaseColor = allowedColor
     val maskRevealColor = blockedColor
-    val enableDuration = scaledDuration(DiagonalWipeIconDefaults.WipeInDurationMillis, animationMultiplier)
-    val disableDuration = scaledDuration(DiagonalWipeIconDefaults.WipeOutDurationMillis, animationMultiplier)
+    val enableDuration =
+        scaledDuration(DiagonalWipeIconDefaults.WipeInDurationMillis, animationMultiplier)
+    val disableDuration =
+        scaledDuration(DiagonalWipeIconDefaults.WipeOutDurationMillis, animationMultiplier)
+    val howItWorksMotion = DiagonalWipeIconDefaults.tween(
+        direction = direction,
+        wipeInDurationMillis = enableDuration,
+        wipeOutDurationMillis = disableDuration,
+    )
+    val progress = rememberWipeProgress(isWiped = isWiped, motion = howItWorksMotion)
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -472,14 +544,12 @@ private fun HowItWorksFlow(
                     modifier = Modifier.weight(1f),
                 ) {
                     SingleIconWipeLayerPreview(
-                        isWiped = isWiped,
+                        progress = progress,
                         icon = iconPair.enabledIcon,
                         tint = allowedColor,
                         entersOnReveal = false,
-                        direction = direction,
+                        motion = howItWorksMotion,
                         modifier = Modifier.size(squareSize),
-                        enableDuration = enableDuration,
-                        disableDuration = disableDuration,
                     )
                 }
 
@@ -496,14 +566,12 @@ private fun HowItWorksFlow(
                     modifier = Modifier.weight(1f),
                 ) {
                     SingleIconWipeLayerPreview(
-                        isWiped = isWiped,
+                        progress = progress,
                         icon = iconPair.disabledIcon,
                         tint = blockedColor,
                         entersOnReveal = true,
-                        direction = direction,
+                        motion = howItWorksMotion,
                         modifier = Modifier.size(squareSize),
-                        enableDuration = enableDuration,
-                        disableDuration = disableDuration,
                     )
                 }
 
@@ -519,12 +587,13 @@ private fun HowItWorksFlow(
                     frameHeight = tileHeight,
                     modifier = Modifier.weight(1f),
                 ) {
-                    DiagonalWipeColorPreview(
-                        isWiped = isWiped,
-                        baseColor = maskBaseColor,
-                        revealColor = maskRevealColor,
-                        showBoundary = true,
-                        direction = direction,
+                    MaskPreviewWithIcons(
+                        progress = progress,
+                        baseIcon = iconPair.enabledIcon,
+                        overlayIcon = iconPair.disabledIcon,
+                        baseTint = allowedColor,
+                        overlayTint = blockedColor,
+                        motion = howItWorksMotion,
                         modifier = Modifier.size(squareSize),
                     )
                 }
@@ -555,22 +624,35 @@ private fun HowItWorksFlow(
                     frameHeight = tileHeight,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    DiagonalWipeIcon(
-                        isWiped = isWiped,
-                        baseIcon = iconPair.enabledIcon,
-                        wipedIcon = iconPair.disabledIcon,
+                    DiagonalWipeIconAtProgress(
+                        progress = progress,
+                        basePainter = rememberVectorPainter(iconPair.enabledIcon),
+                        wipedPainter = rememberVectorPainter(iconPair.disabledIcon),
                         baseTint = allowedColor,
                         wipedTint = blockedColor,
                         contentDescription = MaterialWipeIconLabel(iconPair.label),
                         modifier = Modifier.size(squareSize),
-                        wipeInDurationMillis = enableDuration,
-                        wipeOutDurationMillis = disableDuration,
-                        direction = direction,
+                        motion = howItWorksMotion,
                     )
                 }
             }
         }
     }
+}
+
+@Composable
+private fun rememberWipeProgress(
+    isWiped: Boolean,
+    motion: DiagonalWipeMotion,
+): Float {
+    val transition = updateTransition(targetState = isWiped, label = "howItWorksSharedWipe")
+    val progress by transition.animateFloat(
+        transitionSpec = { motionSpec(false isTransitioningTo true, motion) },
+        label = "howItWorksSharedProgress",
+    ) { wiped ->
+        if (wiped) 1f else 0f
+    }
+    return progress.coerceIn(0f, 1f)
 }
 
 @Composable
@@ -761,13 +843,6 @@ private fun HowItWorksStep(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurface,
-            textAlign = TextAlign.Center,
-            maxLines = 1,
-        )
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -777,34 +852,79 @@ private fun HowItWorksStep(
         ) {
             content()
         }
+        Text(
+            text = title,
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            textAlign = TextAlign.Center,
+            maxLines = 1,
+        )
     }
 }
 
 @Composable
 private fun SingleIconWipeLayerPreview(
-    isWiped: Boolean,
+    progress: Float,
     icon: ImageVector,
     tint: Color,
     entersOnReveal: Boolean,
-    direction: WipeDirection,
+    motion: DiagonalWipeMotion,
     modifier: Modifier = Modifier,
-    enableDuration: Int = DiagonalWipeIconDefaults.WipeInDurationMillis,
-    disableDuration: Int = DiagonalWipeIconDefaults.WipeOutDurationMillis,
 ) {
-    DiagonalWipeIcon(
-        isWiped = isWiped,
-        baseIcon = icon,
-        wipedIcon = icon,
+    DiagonalWipeIconAtProgress(
+        progress = progress,
+        basePainter = rememberVectorPainter(icon),
+        wipedPainter = rememberVectorPainter(icon),
         baseTint = if (entersOnReveal) Color.Transparent else tint,
         wipedTint = if (entersOnReveal) tint else Color.Transparent,
         contentDescription = null,
-        direction = direction,
-        wipeInDurationMillis = enableDuration,
-        wipeOutDurationMillis = disableDuration,
+        motion = motion,
         modifier = modifier
             .padding(2.dp),
     )
 }
+
+@Composable
+private fun OverlappingIconsPreview(
+    baseIcon: ImageVector,
+    overlayIcon: ImageVector,
+    baseTint: Color,
+    overlayTint: Color,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.Center,
+    ) {
+        // Base icon - offset up-left, rotated slightly
+        Icon(
+            imageVector = baseIcon,
+            contentDescription = null,
+            modifier = Modifier
+                .size(28.dp)
+                .graphicsLayer {
+                    translationX = -6f
+                    translationY = -6f
+                    rotationZ = -8f
+                },
+            tint = baseTint.copy(alpha = 0.7f),
+        )
+        // Overlay icon - offset down-right, rotated opposite
+        Icon(
+            imageVector = overlayIcon,
+            contentDescription = null,
+            modifier = Modifier
+                .size(28.dp)
+                .graphicsLayer {
+                    translationX = 6f
+                    translationY = 6f
+                    rotationZ = 8f
+                },
+            tint = overlayTint.copy(alpha = 0.7f),
+        )
+    }
+}
+
 
 @Composable
 private fun IconWipePreview(
@@ -822,10 +942,80 @@ private fun IconWipePreview(
         baseTint = allowedColor,
         wipedTint = blockedColor,
         contentDescription = null,
-        direction = direction,
+        motion = DiagonalWipeIconDefaults.tween(direction = direction),
         modifier = modifier
             .padding(2.dp),
     )
+}
+
+@Composable
+private fun MaskPreviewWithIcons(
+    progress: Float,
+    baseIcon: ImageVector,
+    overlayIcon: ImageVector,
+    baseTint: Color,
+    overlayTint: Color,
+    motion: DiagonalWipeMotion,
+    modifier: Modifier = Modifier,
+) {
+    val clampedProgress = progress.coerceIn(0f, 1f)
+
+    // Simple 3D-like flip showing A becoming B
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.Center,
+    ) {
+        // Rotation based on progress (0 to 180 degrees for flip effect)
+        val rotation = clampedProgress * 180f
+
+        // Base icon (A) - visible when rotation is 0-90
+        if (rotation < 90f) {
+            Icon(
+                imageVector = baseIcon,
+                contentDescription = null,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer {
+                        rotationY = rotation
+                        alpha = 1f - (rotation / 90f)
+                    },
+                tint = baseTint,
+            )
+        }
+
+        // Overlay icon (B) - visible when rotation is 90-180
+        if (rotation > 90f) {
+            Icon(
+                imageVector = overlayIcon,
+                contentDescription = null,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer {
+                        rotationY = rotation - 180f
+                        alpha = (rotation - 90f) / 90f
+                    },
+                tint = overlayTint,
+            )
+        }
+
+        // Wipe line showing the transition
+        if (clampedProgress in 0.2f..0.8f) {
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                val (start, end) = buildWipeBoundaryLine(
+                    width = size.width,
+                    height = size.height,
+                    progress = clampedProgress,
+                    direction = motion.direction,
+                ) ?: return@Canvas
+                drawLine(
+                    color = Color.White.copy(alpha = 0.8f),
+                    start = start,
+                    end = end,
+                    strokeWidth = 2.dp.toPx(),
+                )
+            }
+        }
+    }
 }
 
 @Composable
@@ -960,8 +1150,10 @@ private fun DiagonalWipeIconGridItem(
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
     val isPressed by interactionSource.collectIsPressedAsState()
-    val enableDuration = scaledDuration(DiagonalWipeIconDefaults.WipeInDurationMillis, animationMultiplier)
-    val disableDuration = scaledDuration(DiagonalWipeIconDefaults.WipeOutDurationMillis, animationMultiplier)
+    val enableDuration =
+        scaledDuration(DiagonalWipeIconDefaults.WipeInDurationMillis, animationMultiplier)
+    val disableDuration =
+        scaledDuration(DiagonalWipeIconDefaults.WipeOutDurationMillis, animationMultiplier)
 
     // Press feedback animation with slower exit for smoother feel
     val scale by animateFloatAsState(
@@ -1043,8 +1235,10 @@ private fun DiagonalWipeIconGridItem(
                     wipedTint = MaterialTheme.colorScheme.secondary,
                     contentDescription = MaterialWipeIconLabel(iconPair.label),
                     modifier = Modifier.size(44.dp),
-                    wipeInDurationMillis = enableDuration,
-                    wipeOutDurationMillis = disableDuration,
+                    motion = DiagonalWipeIconDefaults.tween(
+                        wipeInDurationMillis = enableDuration,
+                        wipeOutDurationMillis = disableDuration,
+                    ),
                 )
             }
             Spacer(modifier = Modifier.height(16.dp))
@@ -1081,8 +1275,10 @@ private fun IconPreviewDialog(
     val previewInteractionSource = remember { MutableInteractionSource() }
     val isPreviewHovered by previewInteractionSource.collectIsHoveredAsState()
     val codeSnippet = remember(iconPair) { buildDiagonalWipeUsageSnippet(iconPair) }
-    val enableDuration = scaledDuration(DiagonalWipeIconDefaults.WipeInDurationMillis, effectiveMultiplier)
-    val disableDuration = scaledDuration(DiagonalWipeIconDefaults.WipeOutDurationMillis, effectiveMultiplier)
+    val enableDuration =
+        scaledDuration(DiagonalWipeIconDefaults.WipeInDurationMillis, effectiveMultiplier)
+    val disableDuration =
+        scaledDuration(DiagonalWipeIconDefaults.WipeOutDurationMillis, effectiveMultiplier)
     val playbackEnableDelay = autoPlayDelay(
         DiagonalWipeIconDefaults.WipeInDurationMillis,
         effectiveMultiplier,
@@ -1268,8 +1464,10 @@ private fun IconPreviewInteractivePane(
                 wipedTint = MaterialTheme.colorScheme.secondary,
                 contentDescription = MaterialWipeIconLabel(iconPair.label),
                 modifier = Modifier.size(120.dp),
-                wipeInDurationMillis = enableDuration,
-                wipeOutDurationMillis = disableDuration,
+                motion = DiagonalWipeIconDefaults.tween(
+                    wipeInDurationMillis = enableDuration,
+                    wipeOutDurationMillis = disableDuration,
+                ),
             )
         }
         Spacer(modifier = Modifier.height(24.dp))
@@ -1440,10 +1638,10 @@ private fun IconPreviewCodePane(
 private fun KotlinCodeText(code: String) {
     val keywords = setOf("import", "var", "by", "remember", "mutableStateOf", "false", "true")
     val composableFunctions = setOf("DiagonalWipeIcon")
-    
+
     // Simple tokenizer
     val tokens = code.split(Regex("(?<=\\s)|(?=\\s)|(?<=[()=,])|(?=[()=,])"))
-    
+
     val annotatedString = buildAnnotatedString {
         tokens.forEach { token ->
             when {
@@ -1452,28 +1650,34 @@ private fun KotlinCodeText(code: String) {
                         append(token)
                     }
                 }
+
                 token.startsWith("\"") && token.endsWith("\"") -> {
                     withStyle(SpanStyle(color = Color(0xFF228822))) {
                         append(token)
                     }
                 }
+
                 token in composableFunctions -> {
                     withStyle(SpanStyle(color = Color(0xFFDD8822))) {
                         append(token)
                     }
                 }
-                token.startsWith("Icons.") || token.startsWith("MaterialTheme.") || token.startsWith("Modifier.") -> {
+
+                token.startsWith("Icons.") || token.startsWith("MaterialTheme.") || token.startsWith(
+                    "Modifier."
+                ) -> {
                     withStyle(SpanStyle(color = Color(0xFF8855AA))) {
                         append(token)
                     }
                 }
+
                 else -> {
                     append(token)
                 }
             }
         }
     }
-    
+
     Text(
         text = annotatedString,
         style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
@@ -1515,6 +1719,12 @@ DiagonalWipeIcon(
     wipedTint = MaterialTheme.colorScheme.secondary,
     contentDescription = "${MaterialWipeIconLabel(iconPair.label)}",
     modifier = Modifier.size(120.dp),
+    // Optional: customize timing/direction or use springs.
+    // motion = DiagonalWipeIconDefaults.tween(
+    //     direction = WipeDirection.LeftToRight,
+    //     wipeInDurationMillis = 280,
+    //     wipeOutDurationMillis = 420,
+    // ),
 )
 """.trimIndent()
 }
@@ -1543,5 +1753,6 @@ private fun toIconSymbol(raw: String): String = raw
     .split(Regex("\\s+"))
     .filter { it.isNotBlank() }
     .joinToString(separator = "") { word ->
-        word.lowercase().replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
+        word.lowercase()
+            .replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
     }
