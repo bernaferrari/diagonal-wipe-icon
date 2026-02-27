@@ -63,9 +63,8 @@ private val themeSeedOptions = listOf(
     ThemeSeed("Gold", Color(0xFFFFD700), PaletteStyle.Expressive),
     ThemeSeed("Salmon", Color(0xFFFF8B7B), PaletteStyle.Expressive),
     ThemeSeed("Azure", Color(0xFF007FFF), PaletteStyle.Expressive),
-    ThemeSeed("Rose", Color(0xFFFF007F), PaletteStyle.TonalSpot),
+    ThemeSeed("Rose", Color(0xFFFF007F), PaletteStyle.Expressive),
     ThemeSeed("Slate", Color(0xFF708090), PaletteStyle.Neutral),
-    ThemeSeed("Charcoal", Color(0xFF36454F), PaletteStyle.Vibrant),
 )
 
 @Composable
@@ -119,13 +118,13 @@ fun App() {
         }
     }
 
-    // Show title in top bar when scrolled past hero
-    val showTitleInTopBar = scrollState.value > 400
+    // Title opacity based on scroll position (fade in as user scrolls)
+    val titleAlpha by remember { derivedStateOf { (scrollState.value / 300f).coerceIn(0f, 1f) } }
 
     DynamicMaterialTheme(
         seedColor = selectedSeed.color,
         isDark = isDark,
-        specVersion = ColorSpec.SpecVersion.SPEC_2021,
+        specVersion = ColorSpec.SpecVersion.SPEC_2025,
         style = selectedSeed.style,
         animate = true,
     ) {
@@ -139,12 +138,12 @@ fun App() {
 
             Scaffold(
                 topBar = {
-                    AnimatedTopBar(
-                        showTitle = showTitleInTopBar,
-                        isDark = isDark,
-                        onToggleDark = { isDark = !isDark },
-                        onOpenGitHub = { uriHandler.openUri("https://github.com/bernaferrari") }
-                    )
+                AnimatedTopBar(
+                    titleAlpha = titleAlpha,
+                    isDark = isDark,
+                    onToggleDark = { isDark = !isDark },
+                    onOpenGitHub = { uriHandler.openUri("https://github.com/bernaferrari") }
+                )
                 },
                 containerColor = Color.Transparent
             ) { paddingValues ->
@@ -230,7 +229,7 @@ fun App() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AnimatedTopBar(
-    showTitle: Boolean,
+    titleAlpha: Float,
     isDark: Boolean,
     onToggleDark: () -> Unit,
     onOpenGitHub: () -> Unit,
@@ -242,7 +241,7 @@ private fun AnimatedTopBar(
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.SemiBold
                 ),
-                modifier = Modifier.alpha(if (showTitle) 1f else 0f)
+                modifier = Modifier.alpha(titleAlpha)
             )
         },
         navigationIcon = { },
@@ -260,7 +259,7 @@ private fun AnimatedTopBar(
                         tint = MaterialTheme.colorScheme.onBackground
                     )
                 }
-                
+
                 IconButton(onClick = onToggleDark) {
                     Icon(
                         imageVector = if (isDark) Icons.Outlined.LightMode else Icons.Outlined.DarkMode,
@@ -271,10 +270,7 @@ private fun AnimatedTopBar(
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = if (showTitle) 
-                MaterialTheme.colorScheme.background.copy(alpha = 0.95f)
-            else 
-                Color.Transparent
+            containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.95f)
         )
     )
 }
@@ -391,14 +387,14 @@ private fun ToolbarButton(
                 imageVector = icon,
                 contentDescription = null,
                 modifier = Modifier.size(18.dp),
-                tint = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                tint = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
             )
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelMedium.copy(
                     fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium
                 ),
-                color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                color = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }

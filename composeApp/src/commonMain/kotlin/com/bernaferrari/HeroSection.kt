@@ -73,8 +73,7 @@ fun HeroSection(
 
             // CTA Buttons
             HeroActions(
-                onOpenHowItWorks = onOpenHowItWorks,
-                onScrollToGrid = onScrollToGrid
+                onOpenHowItWorks = onOpenHowItWorks
             )
         }
     }
@@ -169,10 +168,7 @@ private fun HeroAnimatedIcon(
     )
 
     val bgColor by animateColorAsState(
-        targetValue = if (isHovered) 
-            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
-        else 
-            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
+        targetValue = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
         animationSpec = tween(200),
         label = "heroIconBg"
     )
@@ -221,39 +217,19 @@ private fun HeroAnimatedIcon(
 @Composable
 private fun HeroActions(
     onOpenHowItWorks: () -> Unit,
-    onScrollToGrid: () -> Unit,
 ) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically
+    FilledTonalButton(
+        onClick = onOpenHowItWorks,
+        shape = RoundedCornerShape(14.dp),
+        modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
     ) {
-        FilledTonalButton(
-            onClick = onOpenHowItWorks,
-            shape = RoundedCornerShape(14.dp),
-            colors = ButtonDefaults.filledTonalButtonColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer
-            )
-        ) {
-            Text(
-                text = "How it works",
-                style = MaterialTheme.typography.labelLarge.copy(
-                    fontWeight = FontWeight.SemiBold
-                ),
-                modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
-            )
-        }
-
-        TextButton(
-            onClick = onScrollToGrid,
-            shape = RoundedCornerShape(14.dp)
-        ) {
-            Text(
-                text = "Explore icons",
-                style = MaterialTheme.typography.labelLarge.copy(
-                    fontWeight = FontWeight.Medium
-                )
-            )
-        }
+        Text(
+            text = "How it works",
+            style = MaterialTheme.typography.labelLarge.copy(
+                fontWeight = FontWeight.SemiBold
+            ),
+            modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+        )
     }
 }
 
