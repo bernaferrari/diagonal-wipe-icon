@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.ClipOp
@@ -257,62 +258,69 @@ internal fun DiagonalWipeIconAtProgress(
 ) {
     val resolvedBaseTint = resolveWipeTint(baseTint)
     val resolvedWipedTint = resolveWipeTint(wipedTint)
+    val baseColorFilter = remember(resolvedBaseTint) { ColorFilter.tint(resolvedBaseTint) }
+    val wipedColorFilter = remember(resolvedWipedTint) { ColorFilter.tint(resolvedWipedTint) }
+    val revealPath = remember { Path() }
+    val wipePathScratch = remember { WipePathScratch() }
     val clampedProgress = progress.coerceIn(0f, 1f)
 
+    if (clampedProgress <= 0.001f) {
+        Image(
+            painter = basePainter,
+            contentDescription = contentDescription,
+            modifier = modifier,
+            colorFilter = baseColorFilter,
+        )
+        return
+    }
+
+    if (clampedProgress >= 0.999f) {
+        Image(
+            painter = wipedPainter,
+            contentDescription = contentDescription,
+            modifier = modifier,
+            colorFilter = wipedColorFilter,
+        )
+        return
+    }
+
+    val semanticModifier = if (contentDescription != null) {
+        modifier.semantics { this.contentDescription = contentDescription }
+    } else {
+        modifier
+    }
+
     Box(
-        modifier = modifier
-            .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
-            .semantics {
-                if (contentDescription != null) {
-                    this.contentDescription = contentDescription
-                }
-            },
+        modifier = semanticModifier
+            .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen },
     ) {
-        if (clampedProgress <= 0.001f) {
-            Image(
-                painter = basePainter,
-                contentDescription = contentDescription,
-                modifier = Modifier.fillMaxSize(),
-                colorFilter = ColorFilter.tint(resolvedBaseTint),
-            )
-            return@Box
-        }
-
-        if (clampedProgress >= 0.999f) {
-            Image(
-                painter = wipedPainter,
-                contentDescription = contentDescription,
-                modifier = Modifier.fillMaxSize(),
-                colorFilter = ColorFilter.tint(resolvedWipedTint),
-            )
-            return@Box
-        }
-
         Canvas(modifier = Modifier.fillMaxSize()) {
             val travelDistance = wipeTravelDistance(
                 width = size.width,
                 height = size.height,
                 direction = motion.direction,
-            ).coerceAtLeast(1f)
+            )
             val adjustedProgress = (
                 (clampedProgress * travelDistance + motion.seamOverlapPx) / travelDistance
-                ).coerceIn(0f, 1f)
+            ).coerceIn(0f, 1f)
 
-            val revealPath = buildWipeRevealPath(
+            buildWipeRevealPath(
+                path = revealPath,
                 width = size.width,
                 height = size.height,
                 progress = adjustedProgress,
                 direction = motion.direction,
+                scratch = wipePathScratch,
             )
 
             clipPath(path = revealPath, clipOp = ClipOp.Difference) {
                 with(basePainter) {
-                    draw(size = size, colorFilter = ColorFilter.tint(resolvedBaseTint))
+                    draw(size = size, colorFilter = baseColorFilter)
                 }
             }
             clipPath(path = revealPath, clipOp = ClipOp.Intersect) {
                 with(wipedPainter) {
-                    draw(size = size, colorFilter = ColorFilter.tint(resolvedWipedTint))
+                    draw(size = size, colorFilter = wipedColorFilter)
                 }
             }
         }
@@ -342,16 +350,20 @@ internal fun buildWipeBoundaryLine(
 
     val axis = wipeAxis(direction)
     val threshold = wipeBoundaryThreshold(width, height, p, axis)
-    val points = mutableListOf<Offset>()
+    val points = arrayOfNulls<Offset>(4)
+    var pointCount = 0
     val eps = 0.0001f
 
     fun addIfInBounds(point: Offset) {
         val inBounds = point.x >= -eps && point.x <= width + eps &&
                 point.y >= -eps && point.y <= height + eps
         if (!inBounds) return
-        if (points.none { (it - point).getDistance() < 0.01f }) {
-            points += point
+        for (index in 0 until pointCount) {
+            val candidate = points[index] ?: continue
+            if ((candidate - point).getDistance() < 0.01f) return
         }
+        points[pointCount] = point
+        pointCount += 1
     }
 
     if (kotlin.math.abs(axis.y) > eps) {
@@ -363,21 +375,64 @@ internal fun buildWipeBoundaryLine(
         addIfInBounds(Offset((threshold - axis.y * height) / axis.x, height))
     }
 
-    if (points.size < 2) return null
-    if (points.size == 2) return points[0] to points[1]
+    if (pointCount < 2) return null
+    if (pointCount == 2) return points[0]!! to points[1]!!
 
-    var bestPair = points[0] to points[1]
+    var bestStart = points[0]!!
+    var bestEnd = points[1]!!
     var bestDistance = -1f
-    for (i in points.indices) {
-        for (j in i + 1 until points.size) {
-            val distance = (points[i] - points[j]).getDistanceSquared()
+    for (i in 0 until pointCount) {
+        val first = points[i] ?: continue
+        for (j in i + 1 until pointCount) {
+            val second = points[j] ?: continue
+            val distance = (first - second).getDistanceSquared()
             if (distance > bestDistance) {
                 bestDistance = distance
-                bestPair = points[i] to points[j]
+                bestStart = first
+                bestEnd = second
             }
         }
     }
-    return bestPair
+    return bestStart to bestEnd
+}
+
+internal fun buildWipeRevealPath(
+    path: Path,
+    width: Float,
+    height: Float,
+    progress: Float,
+    direction: WipeDirection,
+    scratch: WipePathScratch,
+) {
+    val p = progress.coerceIn(0f, 1f)
+    path.reset()
+
+    if (p <= 0f) return
+    if (p >= 1f) {
+        path.moveTo(0f, 0f)
+        path.lineTo(width, 0f)
+        path.lineTo(width, height)
+        path.lineTo(0f, height)
+        path.close()
+        return
+    }
+
+    val axis = wipeAxis(direction)
+    val threshold = wipeBoundaryThreshold(width, height, p, axis)
+    val pointCount = clipRectangleWithHalfPlane(
+        width = width,
+        height = height,
+        axis = axis,
+        threshold = threshold,
+        scratch = scratch,
+    )
+    if (pointCount == 0) return
+
+    path.moveTo(scratch.outX[0], scratch.outY[0])
+    for (i in 1 until pointCount) {
+        path.lineTo(scratch.outX[i], scratch.outY[i])
+    }
+    path.close()
 }
 
 internal fun buildWipeRevealPath(
@@ -386,28 +441,16 @@ internal fun buildWipeRevealPath(
     progress: Float,
     direction: WipeDirection,
 ): Path {
-    val p = progress.coerceIn(0f, 1f)
-    return Path().apply {
-        if (p <= 0f) return@apply
-        if (p >= 1f) {
-            moveTo(0f, 0f)
-            lineTo(width, 0f)
-            lineTo(width, height)
-            lineTo(0f, height)
-            close()
-            return@apply
-        }
-
-        val axis = wipeAxis(direction)
-        val threshold = wipeBoundaryThreshold(width, height, p, axis)
-        val polygon = clipRectWithHalfPlane(width, height, axis, threshold)
-        if (polygon.isEmpty()) return@apply
-        moveTo(polygon.first().x, polygon.first().y)
-        for (i in 1 until polygon.size) {
-            lineTo(polygon[i].x, polygon[i].y)
-        }
-        close()
-    }
+    val path = Path()
+    buildWipeRevealPath(
+        path = path,
+        width = width,
+        height = height,
+        progress = progress,
+        direction = direction,
+        scratch = WipePathScratch(),
+    )
+    return path
 }
 
 internal fun wipeTravelDistance(
@@ -416,9 +459,12 @@ internal fun wipeTravelDistance(
     direction: WipeDirection,
 ): Float {
     val axis = wipeAxis(direction)
-    val corners = rectangleCorners(width, height)
-    val minValue = corners.minOf { dot(axis, it) }
-    val maxValue = corners.maxOf { dot(axis, it) }
+    val p0 = 0f
+    val p1 = axis.x * width
+    val p2 = axis.x * width + axis.y * height
+    val p3 = axis.y * height
+    val minValue = minOf(p0, p1, p2, p3)
+    val maxValue = maxOf(p0, p1, p2, p3)
     return (maxValue - minValue).coerceAtLeast(1f)
 }
 
@@ -441,77 +487,101 @@ private fun wipeBoundaryThreshold(
     progress: Float,
     axis: Offset,
 ): Float {
-    val corners = rectangleCorners(width, height)
-    val minValue = corners.minOf { dot(axis, it) }
-    val maxValue = corners.maxOf { dot(axis, it) }
+    val p0 = 0f
+    val p1 = axis.x * width
+    val p2 = axis.x * width + axis.y * height
+    val p3 = axis.y * height
+    val minValue = minOf(p0, p1, p2, p3)
+    val maxValue = maxOf(p0, p1, p2, p3)
     return minValue + (maxValue - minValue) * progress.coerceIn(0f, 1f)
 }
 
-private fun clipRectWithHalfPlane(
+internal class WipePathScratch {
+    val inX: FloatArray = FloatArray(4)
+    val inY: FloatArray = FloatArray(4)
+    val outX: FloatArray = FloatArray(8)
+    val outY: FloatArray = FloatArray(8)
+}
+
+private fun clipRectangleWithHalfPlane(
     width: Float,
     height: Float,
     axis: Offset,
     threshold: Float,
-): List<Offset> {
-    val rectangle = rectangleCorners(width, height)
-    return clipPolygonWithHalfPlane(rectangle, axis, threshold)
-}
+    scratch: WipePathScratch,
+): Int {
+    scratch.inX[0] = 0f
+    scratch.inY[0] = 0f
+    scratch.inX[1] = width
+    scratch.inY[1] = 0f
+    scratch.inX[2] = width
+    scratch.inY[2] = height
+    scratch.inX[3] = 0f
+    scratch.inY[3] = height
 
-private fun rectangleCorners(width: Float, height: Float): List<Offset> = listOf(
-    Offset(0f, 0f),
-    Offset(width, 0f),
-    Offset(width, height),
-    Offset(0f, height),
-)
-
-private fun clipPolygonWithHalfPlane(
-    polygon: List<Offset>,
-    axis: Offset,
-    threshold: Float,
-): List<Offset> {
-    if (polygon.isEmpty()) return emptyList()
-    val output = mutableListOf<Offset>()
     val eps = 0.0001f
+    var outCount = 0
 
-    fun inside(point: Offset): Boolean {
-        return dot(axis, point) <= threshold + eps
+    fun addOutputPoint(x: Float, y: Float) {
+        if (outCount > 0) {
+            val dx = scratch.outX[outCount - 1] - x
+            val dy = scratch.outY[outCount - 1] - y
+            if (dx * dx + dy * dy < 0.0001f) return
+        }
+        scratch.outX[outCount] = x
+        scratch.outY[outCount] = y
+        outCount += 1
     }
 
-    var previous = polygon.last()
-    var previousInside = inside(previous)
-    for (current in polygon) {
-        val currentInside = inside(current)
+    var prevX = scratch.inX[3]
+    var prevY = scratch.inY[3]
+    var prevValue = axis.x * prevX + axis.y * prevY - threshold
+    var prevInside = prevValue <= eps
+
+    for (index in 0 until 4) {
+        val currentX = scratch.inX[index]
+        val currentY = scratch.inY[index]
+        val currentValue = axis.x * currentX + axis.y * currentY - threshold
+        val currentInside = currentValue <= eps
+
         when {
-            previousInside && currentInside -> output += current
-            previousInside && !currentInside -> {
-                intersectSegmentWithBoundary(previous, current, axis, threshold)?.let(output::add)
+            prevInside && currentInside -> addOutputPoint(currentX, currentY)
+            prevInside && !currentInside -> {
+                val denominator = prevValue - currentValue
+                if (kotlin.math.abs(denominator) >= eps) {
+                    val t = (prevValue / denominator).coerceIn(0f, 1f)
+                    addOutputPoint(
+                        x = prevX + (currentX - prevX) * t,
+                        y = prevY + (currentY - prevY) * t,
+                    )
+                }
             }
-            !previousInside && currentInside -> {
-                intersectSegmentWithBoundary(previous, current, axis, threshold)?.let(output::add)
-                output += current
+            !prevInside && currentInside -> {
+                val denominator = prevValue - currentValue
+                if (kotlin.math.abs(denominator) >= eps) {
+                    val t = (prevValue / denominator).coerceIn(0f, 1f)
+                    addOutputPoint(
+                        x = prevX + (currentX - prevX) * t,
+                        y = prevY + (currentY - prevY) * t,
+                    )
+                }
+                addOutputPoint(currentX, currentY)
             }
         }
-        previous = current
-        previousInside = currentInside
+
+        prevX = currentX
+        prevY = currentY
+        prevValue = currentValue
+        prevInside = currentInside
     }
-    return output
-}
 
-private fun intersectSegmentWithBoundary(
-    start: Offset,
-    end: Offset,
-    axis: Offset,
-    threshold: Float,
-): Offset? {
-    val startValue = dot(axis, start) - threshold
-    val endValue = dot(axis, end) - threshold
-    val denominator = startValue - endValue
-    if (kotlin.math.abs(denominator) < 0.0001f) return null
-    val t = (startValue / denominator).coerceIn(0f, 1f)
-    return Offset(
-        x = start.x + (end.x - start.x) * t,
-        y = start.y + (end.y - start.y) * t,
-    )
-}
+    if (outCount > 1) {
+        val dx = scratch.outX[0] - scratch.outX[outCount - 1]
+        val dy = scratch.outY[0] - scratch.outY[outCount - 1]
+        if (dx * dx + dy * dy < 0.0001f) {
+            outCount -= 1
+        }
+    }
 
-private fun dot(axis: Offset, point: Offset): Float = axis.x * point.x + axis.y * point.y
+    return outCount
+}

@@ -871,10 +871,12 @@ private fun SingleIconWipeLayerPreview(
     motion: DiagonalWipeMotion,
     modifier: Modifier = Modifier,
 ) {
+    val painter = rememberVectorPainter(icon)
+
     DiagonalWipeIconAtProgress(
         progress = progress,
-        basePainter = rememberVectorPainter(icon),
-        wipedPainter = rememberVectorPainter(icon),
+        basePainter = painter,
+        wipedPainter = painter,
         baseTint = if (entersOnReveal) Color.Transparent else tint,
         wipedTint = if (entersOnReveal) tint else Color.Transparent,
         contentDescription = null,
@@ -1027,6 +1029,9 @@ private fun DiagonalWipeColorPreview(
     direction: WipeDirection,
     modifier: Modifier = Modifier,
 ) {
+    val revealPath = remember { Path() }
+    val wipePathScratch = remember { WipePathScratch() }
+
     val transition = updateTransition(targetState = isWiped, label = "howItWorksWipe")
     val revealProgress by transition.animateFloat(
         transitionSpec = {
@@ -1056,11 +1061,13 @@ private fun DiagonalWipeColorPreview(
 
         if (progress <= 0f) return@Canvas
 
-        val revealPath = buildWipeRevealPath(
+        buildWipeRevealPath(
+            path = revealPath,
             width = size.width,
             height = size.height,
             progress = progress,
             direction = direction,
+            scratch = wipePathScratch,
         )
         clipPath(path = revealPath, clipOp = ClipOp.Intersect) {
             drawRect(revealColor)

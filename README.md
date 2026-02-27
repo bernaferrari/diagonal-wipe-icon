@@ -1,6 +1,6 @@
 <div align="center">
 
-# ✨ Diagonal Wipe Icon
+# Diagonal Wipe Icon
 
 **Smooth icon transitions for Compose Multiplatform**
 
@@ -8,183 +8,111 @@
 [![Compose](https://img.shields.io/badge/Compose-1.6+-4285F4.svg?style=flat&logo=jetpackcompose)](https://developer.android.com/jetpack/compose)
 [![License](https://img.shields.io/badge/License-MIT-green.svg?style=flat)](LICENSE)
 
-<img src="assets/demo.gif" width="600" alt="Diagonal Wipe Demo">
+<img src="assets/screenshots/01-before-after.png" width="680" alt="Diagonal wipe icon before and after">
 
-**[Try Demo](https://github.com/bernaferrari/diagonal-wipe-icon)** • **[Copy File](composeApp/src/commonMain/kotlin/com/bernaferrari/DiagonalWipeIcon.kt)**
+**[Run Demo Locally](#run-the-demo)** • **[Copy Single File](composeApp/src/commonMain/kotlin/com/bernaferrari/DiagonalWipeIcon.kt)**
 
 </div>
 
 ---
 
-## The 30-Second Pitch
+## What This Is
 
-**Before:** Static icon swaps feel jarring ❌  
-**After:** Smooth diagonal wipes feel polished ✨
+`DiagonalWipeIcon` is a single-file Compose Multiplatform component that animates icon state changes with a diagonal (or axis-aligned) wipe.
 
-```kotlin
-// Before: Instant, jarring change
-Icon(
-    imageVector = if (isOn) Icons.Outlined.Power 
-                  else Icons.Outlined.PowerOff
-)
-
-// After: Smooth, animated transition
-DiagonalWipeIcon(
-    isWiped = !isOn,
-    baseIcon = Icons.Outlined.Power,
-    wipedIcon = Icons.Outlined.PowerOff
-)
-```
-
-**SF Symbols** has this. **Material Icons** doesn't. Until now.
+It is designed for:
+- Toggle-style controls (`on/off`, `enabled/disabled`, `mute/unmute`)
+- Product UI where icon transitions should feel polished
+- Teams that want zero extra library dependency and easy copy/paste adoption
 
 ---
 
-## Why This Exists
+## Why Use It
 
-**The Problem:**  
-iOS developers get beautiful icon transitions for free with SF Symbols. Android/Compose developers? Either hand-write complex animations or live with instant cuts.
-
-**The Solution:**  
-One file. Copy. Paste. Done. Zero dependencies. Works with any icon.
+- Better visual continuity than instant icon swaps
+- Supports **both** `ImageVector` and `Painter`
+- Motion is fully configurable (`tween`, `spring`, mixed specs)
+- Works in `commonMain`
+- Small integration cost: one Kotlin file
 
 ---
 
 ## Installation
 
 ```bash
-# Option 1: Copy the file
+# Copy the file directly
 curl -O https://raw.githubusercontent.com/bernaferrari/diagonal-wipe-icon/main/composeApp/src/commonMain/kotlin/com/bernaferrari/DiagonalWipeIcon.kt
-
-# Option 2: Copy-paste from GitHub
-# File is at: composeApp/src/commonMain/kotlin/com/bernaferrari/DiagonalWipeIcon.kt
 ```
 
-Drop it in your `commonMain/kotlin` folder. That's it. No Gradle. No dependencies. No version conflicts.
+Place it in your `commonMain/kotlin` source set.
+
+No extra dependency is required for the component itself.
 
 ---
 
-## Usage
-
-### Basic Toggle Button
+## Quick Start
 
 ```kotlin
 @Composable
 fun PowerButton() {
     var isOn by remember { mutableStateOf(false) }
-    
+
     IconButton(onClick = { isOn = !isOn }) {
         DiagonalWipeIcon(
             isWiped = !isOn,
             baseIcon = Icons.Outlined.Power,
-            wipedIcon = Icons.Outlined.PowerOff
+            wipedIcon = Icons.Outlined.PowerOff,
+            contentDescription = "Toggle power"
         )
     }
 }
 ```
 
-### With Custom Colors
-
-```kotlin
-DiagonalWipeIcon(
-    isWiped = isMuted,
-    baseIcon = Icons.Outlined.VolumeUp,
-    wipedIcon = Icons.Outlined.VolumeOff,
-    baseTint = MaterialTheme.colorScheme.primary,
-    wipedTint = MaterialTheme.colorScheme.secondary,
-    contentDescription = "Toggle mute"
-)
-```
-
-### Canonical Recipes
-
-```kotlin
-// 1) Balanced default (great for most UI)
-DiagonalWipeIcon(
-    ...,
-    motion = DiagonalWipeIconDefaults.gentle()
-)
-
-// 2) Fast/snappy interactions (switches, quick controls)
-DiagonalWipeIcon(
-    ...,
-    motion = DiagonalWipeIconDefaults.snappy(
-        direction = WipeDirection.LeftToRight
-    )
-)
-
-// 3) Expressive/brand-heavy motion (more personality)
-DiagonalWipeIcon(
-    ...,
-    motion = DiagonalWipeIconDefaults.expressive(
-        direction = WipeDirection.BottomToTop
-    )
-)
-```
-
-### Custom Specs (Tween, Spring, Or Mixed)
-
-```kotlin
-DiagonalWipeIcon(
-    ...,
-    motion = DiagonalWipeMotion(
-        direction = WipeDirection.LeftToRight,
-        wipeInSpec = spring(stiffness = Spring.StiffnessMediumLow),
-        wipeOutSpec = tween(durationMillis = 500, easing = LinearOutSlowInEasing)
-    )
-)
-```
-
-### Tween vs Spring
-
-- Use `tween` when you need precise timing, consistency, and easy synchronization with other UI events.
-- Use `spring` when you want more natural physics and tactile feel.
-- Mix both when entering and exiting should feel different (e.g. fast reveal + softer reset).
-
 ---
 
-## How It Works
+## API Overview
 
-```
-Base Icon          Mask Layer          Result
-    ⚡                ╱╲                ⚡
-    ⚡      +        ╱  ╲      =       🔌
-    ⚡              ╱    ╲             🔌
-```
-
-A moving diagonal mask reveals one icon while hiding the other. Both layers stay synchronized perfectly.
-
-**Technical Details:**
-- Canvas-based compositing (GPU-accelerated)
-- Custom path clipping for 8 directions
-- 530ms reveal / 800ms hide (customizable)
-- Cubic-bezier easing for natural motion
-- Fast paths at rest states (draws a single layer)
-- During animation it does extra work vs a static vector (clipping + compositing)
-
----
-
-## API Reference
+### `ImageVector` overload
 
 ```kotlin
 @Composable
 fun DiagonalWipeIcon(
-    isWiped: Boolean,                    // Target state
-    baseIcon: ImageVector,               // Icon shown when isWiped = false
-    wipedIcon: ImageVector,              // Icon shown when isWiped = true
-    baseTint: Color = Color.Unspecified, // Tint for base icon
-    wipedTint: Color = Color.Unspecified,// Tint for wiped icon
-    contentDescription: String? = null,  // Accessibility label
-    modifier: Modifier = Modifier,       // Size, padding, etc.
+    isWiped: Boolean,
+    baseIcon: ImageVector,
+    wipedIcon: ImageVector,
+    baseTint: Color = Color.Unspecified,
+    wipedTint: Color = Color.Unspecified,
+    contentDescription: String? = null,
+    modifier: Modifier = Modifier,
     motion: DiagonalWipeMotion = DiagonalWipeIconDefaults.defaultMotion
 )
+```
 
+### `Painter` overload
+
+```kotlin
+@Composable
+fun DiagonalWipeIcon(
+    isWiped: Boolean,
+    basePainter: Painter,
+    wipedPainter: Painter,
+    baseTint: Color = Color.Unspecified,
+    wipedTint: Color = Color.Unspecified,
+    contentDescription: String? = null,
+    modifier: Modifier = Modifier,
+    motion: DiagonalWipeMotion = DiagonalWipeIconDefaults.defaultMotion
+)
+```
+
+### Motion model
+
+```kotlin
 @Immutable
 data class DiagonalWipeMotion(
     val direction: WipeDirection = WipeDirection.TopLeftToBottomRight,
-    val wipeInSpec: FiniteAnimationSpec<Float> = tween(...),  // tween / spring / keyframes ...
-    val wipeOutSpec: FiniteAnimationSpec<Float> = tween(...), // tween / spring / keyframes ...
-    val seamOverlapPx: Float = 0.8f
+    val wipeInSpec: FiniteAnimationSpec<Float>,
+    val wipeOutSpec: FiniteAnimationSpec<Float>,
+    val seamOverlapPx: Float = 0.8f,
 )
 
 object DiagonalWipeIconDefaults {
@@ -198,10 +126,95 @@ object DiagonalWipeIconDefaults {
 
 ---
 
-## Try It Yourself
+## Motion Recipes
+
+### Balanced default
+
+```kotlin
+DiagonalWipeIcon(
+    ...,
+    motion = DiagonalWipeIconDefaults.gentle()
+)
+```
+
+### Fast control interaction
+
+```kotlin
+DiagonalWipeIcon(
+    ...,
+    motion = DiagonalWipeIconDefaults.snappy(
+        direction = WipeDirection.LeftToRight
+    )
+)
+```
+
+### Custom spring/tween mix
+
+```kotlin
+DiagonalWipeIcon(
+    ...,
+    motion = DiagonalWipeMotion(
+        direction = WipeDirection.BottomToTop,
+        wipeInSpec = spring(stiffness = Spring.StiffnessMediumLow),
+        wipeOutSpec = tween(durationMillis = 500, easing = LinearOutSlowInEasing)
+    )
+)
+```
+
+---
+
+## How It Works
+
+A moving boundary path reveals one icon while clipping the other.
+
+- Layer A: base icon
+- Layer B: wiped icon
+- Shared reveal path controls both layers
+- Supports 8 directions (diagonal + cardinal)
+
+<img src="assets/screenshots/02-how-it-works.png" width="900" alt="How the diagonal wipe works">
+
+---
+
+## Performance
+
+### Practical expectations
+
+- At rest (`isWiped` settled): close to a normal single icon draw
+- During transition: heavier than a static vector draw (two layers + clipping)
+- Typical app usage: smooth for buttons/toggles
+- Worst case to avoid: many icons animating continuously at once
+
+In most real apps, that worst case is unlikely.
+
+### Built-in optimizations
+
+- Settled states use direct single-layer draw paths
+- Tint color filters are cached and reused
+- Wipe path/scratch buffers are reused across frames
+- Direction math uses lightweight scalar calculations
+
+---
+
+## Production Guidance
+
+- Excellent for prototypes and demos
+- Also appropriate for production UI with occasional state transitions
+- If you have high-density continuously animated surfaces, profile and reduce concurrent wipes
+
+---
+
+## Accessibility
+
+- Pass `contentDescription` for semantic labeling
+- Respect `prefers-reduced-motion` at app level if your product has strict motion policies
+
+---
+
+## Run The Demo
 
 ```bash
-# Desktop (macOS/Linux/Windows)
+# Desktop
 ./gradlew :composeApp:run
 
 # Web (Wasm)
@@ -211,48 +224,21 @@ object DiagonalWipeIconDefaults {
 ./gradlew :composeApp:installDebug
 ```
 
-Play with 70+ icon pairs. Test all 8 wipe directions. See it in action.
-
----
-
-## Performance
-
-| Metric | What to expect |
-|--------|----------------|
-| At rest (`isWiped` settled) | Close to a normal single icon draw |
-| During transition | Heavier than static vector draw (two layers + clipping) |
-| Typical UX impact | Smooth for buttons/toggles; avoid animating many continuously |
-| Binary size | Small (single Kotlin file, no extra dependency) |
-
 ---
 
 ## FAQ
 
-**Q: Can I use custom icons?**  
-A: Yes! Any `ImageVector` works — Material, FontAwesome, your own SVGs.
+**Can I use custom icons?**  
+Yes. Any `ImageVector` works, and you can also use any `Painter`.
 
-**Q: Does it work on iOS?**  
-A: Yes, via Compose Multiplatform.
+**Can I use springs or custom easing?**  
+Yes. Provide `wipeInSpec`/`wipeOutSpec` via `DiagonalWipeMotion`.
 
-**Q: What about accessibility?**  
-A: Full support. Just pass a `contentDescription`.
-
-**Q: Can I change the animation speed?**  
-A: Yes. Use `DiagonalWipeIconDefaults.tween(wipeInDurationMillis = ..., wipeOutDurationMillis = ...)`.
-
-**Q: Can I use spring animations or custom easing?**  
-A: Yes. Pass `DiagonalWipeMotion(wipeInSpec = spring(...), wipeOutSpec = tween(...))`.
+**Is this only for prototypes?**  
+No. It is great for prototypes and generally production-safe for typical UI interactions.
 
 ---
 
 ## License
 
 MIT © [Bernardo Ferrari](https://github.com/bernaferrari)
-
----
-
-<div align="center">
-
-Made with ☕ and Compose Multiplatform
-
-</div>
