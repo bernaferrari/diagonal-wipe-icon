@@ -185,9 +185,6 @@ fun App() {
                             modifier = Modifier.fillMaxWidth()
                         )
 
-                        // Footer
-                        Footer()
-
                         // Space for bottom toolbar
                         Spacer(modifier = Modifier.height(100.dp))
                     }
@@ -240,18 +237,13 @@ private fun AnimatedTopBar(
 ) {
     TopAppBar(
         title = {
-            AnimatedVisibility(
-                visible = showTitle,
-                enter = fadeIn(tween(200)) + slideInVertically(tween(200)) { it / 2 },
-                exit = fadeOut(tween(150)) + slideOutVertically(tween(150)) { it / 2 }
-            ) {
-                Text(
-                    text = "Diagonal Wipe Icons",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.SemiBold
-                    )
-                )
-            }
+            Text(
+                text = "Diagonal Wipe Icons",
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.SemiBold
+                ),
+                modifier = Modifier.alpha(if (showTitle) 1f else 0f)
+            )
         },
         navigationIcon = { },
         actions = {
@@ -515,28 +507,6 @@ private fun AnimatedMeshBackground(seedColor: Color, isDark: Boolean) {
                 )
             }
     )
-}
-
-@Composable
-private fun Footer() {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 48.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Text(
-            text = "Diagonal Wipe Icons",
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Text(
-            text = "Built with Compose Multiplatform",
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-        )
-    }
 }
 
 // Custom GitHub icon

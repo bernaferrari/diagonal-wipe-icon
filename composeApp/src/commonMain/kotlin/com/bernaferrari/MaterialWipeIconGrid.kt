@@ -1853,20 +1853,6 @@ internal fun DiagonalWipeIconGridItemV2(
         label = "cardScale"
     )
 
-    // Subtle elevation
-    val elevation by animateDpAsState(
-        targetValue = when {
-            isPressed -> 2.dp
-            isHovered -> 4.dp
-            else -> 0.dp
-        },
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioNoBouncy,
-            stiffness = Spring.StiffnessMedium
-        ),
-        label = "cardElevation"
-    )
-
     // Background color - simpler, no heavy glassmorphism
     val backgroundColor by animateColorAsState(
         targetValue = when {
@@ -1878,33 +1864,24 @@ internal fun DiagonalWipeIconGridItemV2(
         label = "cardBackground"
     )
 
-    // Border color - invisible by default, visible on interaction
+    // Border color - always present but animates from subtle to accent
     val borderColor by animateColorAsState(
         targetValue = when {
-            isPressed -> accentColor.copy(alpha = 0.5f)
-            isHovered -> accentColor.copy(alpha = 0.3f)
-            else -> Color.Transparent
+            isPressed -> accentColor
+            isHovered -> accentColor.copy(alpha = 0.7f)
+            else -> MaterialTheme.colorScheme.outline.copy(alpha = 0.15f)
         },
         animationSpec = tween(150),
         label = "borderColor"
     )
 
-    // Simple shadow/glow without blur
-    val shadowAlpha by animateFloatAsState(
-        targetValue = if (isHovered) 0.15f else 0f,
-        animationSpec = tween(200),
-        label = "shadowAlpha"
-    )
-
-    Surface(
-        shape = RoundedCornerShape(20.dp),
-        color = backgroundColor,
-        tonalElevation = if (isHovered) 1.dp else 0.dp,
-        shadowElevation = elevation,
+    Box(
         modifier = Modifier
             .width(150.dp)
             .height(170.dp)
             .graphicsLayer { scaleX = scale; scaleY = scale }
+            .clip(RoundedCornerShape(20.dp))
+            .background(backgroundColor)
             .border(
                 width = 1.dp,
                 color = borderColor,
@@ -1917,6 +1894,7 @@ internal fun DiagonalWipeIconGridItemV2(
                 indication = null,
                 onClick = onOpen,
             ),
+        contentAlignment = Alignment.Center
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
