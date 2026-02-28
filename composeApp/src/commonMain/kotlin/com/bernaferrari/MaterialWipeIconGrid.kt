@@ -90,6 +90,7 @@ import androidx.compose.foundation.layout.FlowRow
 
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
 import kotlin.math.min
@@ -102,6 +103,7 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.zIndex
 import kotlinx.coroutines.delay
+import androidx.compose.runtime.key
 import androidx.compose.runtime.setValue
 
 data class MaterialWipeIconPair(
@@ -302,11 +304,11 @@ private fun SectionWithStaggeredGrid(
         // Section header with dramatic typography
         MaterialWipeIconSectionHeaderV2(section, accentColor)
 
-        // Staggered grid using FlowRow
+        // Staggered grid using FlowRow - smaller gaps, larger items
         FlowRow(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
-            verticalArrangement = Arrangement.spacedBy(32.dp),
+            horizontalArrangement = Arrangement.spacedBy(0.dp, Alignment.CenterHorizontally),
+            verticalArrangement = Arrangement.spacedBy(0.dp),
             maxItemsInEachRow = 6
         ) {
             section.icons.forEachIndexed { index, iconPair ->
@@ -504,7 +506,7 @@ internal fun HowItWorksDialog(
                     direction = direction,
                     tileHeight = 100.dp,
                     squareSize = 64.dp,
-                    animationMultiplier = SlowAnimationMultiplier,
+                    animationMultiplier = animationMultiplier,
                 )
                 Text(
                     text = "One mask controls both icons, so they always stay in sync.",
@@ -537,14 +539,14 @@ private fun HowItWorksFlow(
     val blockedColor = MaterialTheme.colorScheme.secondary
     val maskBaseColor = allowedColor
     val maskRevealColor = blockedColor
-    val enableDuration =
-        scaledDuration(DiagonalWipeIconDefaults.WipeInDurationMillis, animationMultiplier)
-    val disableDuration =
-        scaledDuration(DiagonalWipeIconDefaults.WipeOutDurationMillis, animationMultiplier)
-    val howItWorksMotion = DiagonalWipeIconDefaults.tween(
+    // Use spring with stiffness based on speed mode
+    val stiffness = if (animationMultiplier > 1f) Spring.StiffnessVeryLow else Spring.StiffnessLow
+    val howItWorksMotion = DiagonalWipeIconDefaults.spring(
         direction = direction,
-        wipeInDurationMillis = enableDuration,
-        wipeOutDurationMillis = disableDuration,
+        wipeInStiffness = stiffness,
+        wipeOutStiffness = stiffness,
+        wipeInDampingRatio = Spring.DampingRatioNoBouncy,
+        wipeOutDampingRatio = Spring.DampingRatioNoBouncy,
     )
     val progress = rememberWipeProgress(isWiped = isWiped, motion = howItWorksMotion)
 
@@ -817,10 +819,6 @@ private fun DirectionIconButton(
 
     Surface(
         shape = RoundedCornerShape(12.dp),
-        color = when {
-            selected -> MaterialTheme.colorScheme.primaryContainer
-            else -> MaterialTheme.colorScheme.surface
-        },
         tonalElevation = when {
             selected -> 2.dp
             isHovered -> 1.dp
@@ -1302,37 +1300,34 @@ private fun IconPreviewDialog(
     var isPlaying by remember { mutableStateOf(true) }
     var pausedTapWiped by remember { mutableStateOf(false) }
     var hasHoveredWhilePaused by remember { mutableStateOf(false) }
-    var previewSlowMode by remember { mutableStateOf(false) }
-    val previewMultiplier = if (previewSlowMode) SlowAnimationMultiplier else 1f
-    val effectiveMultiplier = baseAnimationMultiplier * previewMultiplier
+    // Start with global slow mode setting, but allow user to toggle in dialog
+    var previewSlowMode by remember { mutableStateOf(baseAnimationMultiplier > 1f) }
     val previewInteractionSource = remember { MutableInteractionSource() }
     val isPreviewHovered by previewInteractionSource.collectIsHoveredAsState()
     val codeSnippet = remember(iconPair) { buildDiagonalWipeUsageSnippet(iconPair) }
-    val enableDuration =
-        scaledDuration(DiagonalWipeIconDefaults.WipeInDurationMillis, effectiveMultiplier)
-    val disableDuration =
-        scaledDuration(DiagonalWipeIconDefaults.WipeOutDurationMillis, effectiveMultiplier)
-    val playbackEnableDelay = autoPlayDelay(
-        DiagonalWipeIconDefaults.WipeInDurationMillis,
-        effectiveMultiplier,
-    )
-    val playbackDisableDelay = autoPlayDelay(
-        DiagonalWipeIconDefaults.WipeOutDurationMillis,
-        effectiveMultiplier,
-    )
+
+    // Animation timing: custom stiffness values for better feel
+    // Normal: 150f (relaxed), Slow: 50f (very relaxed)
+    val isSlow = previewSlowMode || baseAnimationMultiplier > 1f
+    val stiffness = if (isSlow) 50f else 150f
     val previewIsWiped = when {
         isPlaying -> blocked
         hasHoveredWhilePaused -> isPreviewHovered
         else -> pausedTapWiped
     }
 
-    LaunchedEffect(isPlaying, playbackEnableDelay, playbackDisableDelay) {
+    // Loop timing: match grid timing using autoPlayDelay formula
+    val loopDelayMs = autoPlayDelay(
+        DiagonalWipeIconDefaults.WipeInDurationMillis,
+        if (isSlow) SlowAnimationMultiplier else 1f
+    )
+    LaunchedEffect(isPlaying, loopDelayMs) {
         if (!isPlaying) return@LaunchedEffect
         while (true) {
             blocked = true
-            delay(playbackEnableDelay.toLong())
+            delay(loopDelayMs.toLong())
             blocked = false
-            delay(playbackDisableDelay.toLong())
+            delay(loopDelayMs.toLong())
         }
     }
 
@@ -1366,8 +1361,7 @@ private fun IconPreviewDialog(
                             previewSlowMode = previewSlowMode,
                             previewIsWiped = previewIsWiped,
                             previewInteractionSource = previewInteractionSource,
-                            enableDuration = enableDuration,
-                            disableDuration = disableDuration,
+                            stiffness = stiffness,
                             onPreviewTap = {
                                 if (isPlaying) {
                                     isPlaying = false
@@ -1410,8 +1404,7 @@ private fun IconPreviewDialog(
                             previewSlowMode = previewSlowMode,
                             previewIsWiped = previewIsWiped,
                             previewInteractionSource = previewInteractionSource,
-                            enableDuration = enableDuration,
-                            disableDuration = disableDuration,
+                            stiffness = stiffness,
                             onPreviewTap = {
                                 if (isPlaying) {
                                     isPlaying = false
@@ -1455,8 +1448,7 @@ private fun IconPreviewInteractivePane(
     previewSlowMode: Boolean,
     previewIsWiped: Boolean,
     previewInteractionSource: MutableInteractionSource,
-    enableDuration: Int,
-    disableDuration: Int,
+    stiffness: Float,
     onPreviewTap: () -> Unit,
     onTogglePlaying: () -> Unit,
     onToggleSlow: () -> Unit,
@@ -1489,6 +1481,7 @@ private fun IconPreviewInteractivePane(
                 ),
             contentAlignment = Alignment.Center,
         ) {
+            val stiffness = if (previewSlowMode) Spring.StiffnessVeryLow else Spring.StiffnessLow
             DiagonalWipeIcon(
                 isWiped = previewIsWiped,
                 baseIcon = iconPair.enabledIcon,
@@ -1497,9 +1490,11 @@ private fun IconPreviewInteractivePane(
                 wipedTint = MaterialTheme.colorScheme.secondary,
                 contentDescription = MaterialWipeIconLabel(iconPair.label),
                 modifier = Modifier.size(120.dp),
-                motion = DiagonalWipeIconDefaults.tween(
-                    wipeInDurationMillis = enableDuration,
-                    wipeOutDurationMillis = disableDuration,
+                motion = DiagonalWipeIconDefaults.spring(
+                    wipeInStiffness = stiffness,
+                    wipeOutStiffness = stiffness,
+                    wipeInDampingRatio = Spring.DampingRatioNoBouncy,
+                    wipeOutDampingRatio = Spring.DampingRatioNoBouncy,
                 ),
             )
         }
@@ -1837,11 +1832,6 @@ internal fun DiagonalWipeIconGridItemV2(
     val isHovered by interactionSource.collectIsHoveredAsState()
     val isPressed by interactionSource.collectIsPressedAsState()
 
-    val enableDuration =
-        scaledDuration(DiagonalWipeIconDefaults.WipeInDurationMillis, animationMultiplier)
-    val disableDuration =
-        scaledDuration(DiagonalWipeIconDefaults.WipeOutDurationMillis, animationMultiplier)
-
     // Scale on press
     val scale by animateFloatAsState(
         targetValue = if (isPressed) 0.95f else 1f,
@@ -1876,7 +1866,7 @@ internal fun DiagonalWipeIconGridItemV2(
 
     Column(
         modifier = Modifier
-            .width(120.dp)
+            .width(136.dp)
             .graphicsLayer { scaleX = scale; scaleY = scale }
             .pointerHoverIcon(PointerIcon.Hand)
             .hoverable(interactionSource)
@@ -1884,9 +1874,11 @@ internal fun DiagonalWipeIconGridItemV2(
                 interactionSource = interactionSource,
                 indication = null,
                 onClick = onOpen,
-            ),
+            )
+            // Keep visuals at 120dp while making the whole 136dp item interactive.
+            .padding(horizontal = 10.dp, vertical = 20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         // Icon container - clean square with animated border
         Box(
@@ -1902,6 +1894,9 @@ internal fun DiagonalWipeIconGridItemV2(
                 .padding(18.dp),
             contentAlignment = Alignment.Center
         ) {
+            // Stiffness: lower = slower. Slow mode uses even lower stiffness
+            val stiffness = if (animationMultiplier > 1f) Spring.StiffnessVeryLow else Spring.StiffnessLow
+
             DiagonalWipeIcon(
                 isWiped = if (isLooping) allIconsWiped else isHovered,
                 baseIcon = iconPair.enabledIcon,
@@ -1910,9 +1905,11 @@ internal fun DiagonalWipeIconGridItemV2(
                 wipedTint = MaterialTheme.colorScheme.secondary,
                 contentDescription = MaterialWipeIconLabel(iconPair.label),
                 modifier = Modifier.fillMaxSize(),
-                motion = DiagonalWipeIconDefaults.tween(
-                    wipeInDurationMillis = enableDuration,
-                    wipeOutDurationMillis = disableDuration,
+                motion = DiagonalWipeIconDefaults.spring(
+                    wipeInStiffness = stiffness,
+                    wipeOutStiffness = stiffness,
+                    wipeInDampingRatio = Spring.DampingRatioNoBouncy,
+                    wipeOutDampingRatio = Spring.DampingRatioNoBouncy,
                 ),
             )
         }

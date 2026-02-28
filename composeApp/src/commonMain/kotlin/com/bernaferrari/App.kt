@@ -251,7 +251,10 @@ private fun AnimatedTopBar(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(end = 8.dp)
             ) {
-                IconButton(onClick = onOpenGitHub) {
+                IconButton(
+                    onClick = onOpenGitHub,
+                    modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
+                ) {
                     Icon(
                         imageVector = GitHubIcon,
                         contentDescription = "GitHub",
@@ -260,7 +263,10 @@ private fun AnimatedTopBar(
                     )
                 }
 
-                IconButton(onClick = onToggleDark) {
+                IconButton(
+                    onClick = onToggleDark,
+                    modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
+                ) {
                     Icon(
                         imageVector = if (isDark) Icons.Outlined.LightMode else Icons.Outlined.DarkMode,
                         contentDescription = if (isDark) "Light mode" else "Dark mode",
