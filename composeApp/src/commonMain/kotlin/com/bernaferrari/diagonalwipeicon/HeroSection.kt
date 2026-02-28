@@ -12,8 +12,6 @@ import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -108,10 +106,11 @@ private fun HeroIconShowcase(
     // Use actual icon pairs from the catalog for consistency
     val iconPairs = remember {
         listOf(
-            MaterialWipeIconPair("Visibility Off", Icons.Outlined.Visibility, Icons.Outlined.VisibilityOff),
-            MaterialWipeIconPair("Wifi Off", Icons.Outlined.Wifi, Icons.Outlined.WifiOff),
-            MaterialWipeIconPair("Mic Off", Icons.Outlined.Mic, Icons.Outlined.MicOff),
-            MaterialWipeIconPair("Alarm Off", Icons.Outlined.Alarm, Icons.Outlined.AlarmOff),
+            MaterialWipeIconPair("Visibility", MaterialSymbolIcons.Visibility, MaterialSymbolIcons.VisibilityOff),
+            MaterialWipeIconPair("Wifi", MaterialSymbolIcons.Wifi, MaterialSymbolIcons.WifiOff),
+            MaterialWipeIconPair("Mic", MaterialSymbolIcons.Mic, MaterialSymbolIcons.MicOff),
+            MaterialWipeIconPair("Warning", MaterialSymbolIcons.Warning, MaterialSymbolIcons.WarningOff),
+            MaterialWipeIconPair("Alarm", MaterialSymbolIcons.Alarm, MaterialSymbolIcons.AlarmOff),
         )
     }
 
@@ -200,8 +199,8 @@ private fun HeroAnimatedIcon(
 
         DiagonalWipeIcon(
             isWiped = isWiped,
-            baseIcon = iconPair.enabledIcon,
-            wipedIcon = iconPair.disabledIcon,
+            basePainter = iconPair.enabledIcon.painter(),
+            wipedPainter = iconPair.disabledIcon.painter(),
             baseTint = MaterialTheme.colorScheme.primary,
             wipedTint = MaterialTheme.colorScheme.secondary,
             contentDescription = materialWipeIconLabel(iconPair.label),

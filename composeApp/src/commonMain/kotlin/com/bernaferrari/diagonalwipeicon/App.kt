@@ -21,13 +21,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Stop
-import androidx.compose.material.icons.outlined.DarkMode
-import androidx.compose.material.icons.outlined.LightMode
-import androidx.compose.material.icons.outlined.Speed
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -265,7 +258,11 @@ private fun AnimatedTopBar(
                     modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
                 ) {
                     Icon(
-                        imageVector = if (isDark) Icons.Outlined.LightMode else Icons.Outlined.DarkMode,
+                        painter = if (isDark) {
+                            MaterialSymbolIcons.LightMode.painter()
+                        } else {
+                            MaterialSymbolIcons.DarkMode.painter()
+                        },
                         contentDescription = if (isDark) "Light mode" else "Dark mode",
                         tint = MaterialTheme.colorScheme.onBackground
                     )
@@ -292,7 +289,8 @@ private fun BottomToolbar(
     HorizontalFloatingToolbar(
         expanded = true,
         modifier = Modifier
-            .padding(bottom = 16.dp),
+            .padding(bottom = 16.dp)
+            .heightIn(max = 72.dp),
         colors = FloatingToolbarDefaults.standardFloatingToolbarColors(
             toolbarContainerColor = MaterialTheme.colorScheme.surface,
             toolbarContentColor = MaterialTheme.colorScheme.onSurface,
@@ -351,7 +349,7 @@ private fun BottomToolbar(
                     ),
                 ) {
                     Icon(
-                        imageVector = Icons.Outlined.Speed,
+                        painter = MaterialSymbolIcons.Speed.painter(),
                         contentDescription = null,
                         modifier = Modifier.size(17.dp),
                     )
@@ -382,7 +380,11 @@ private fun BottomToolbar(
                     ),
                 ) {
                     Icon(
-                        imageVector = if (isLooping) Icons.Filled.Stop else Icons.Filled.PlayArrow,
+                        painter = if (isLooping) {
+                            MaterialSymbolIcons.Stop.painter()
+                        } else {
+                            MaterialSymbolIcons.PlayArrow.painter()
+                        },
                         contentDescription = null,
                         modifier = Modifier.size(17.dp),
                     )

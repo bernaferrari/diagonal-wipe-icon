@@ -20,10 +20,14 @@ kotlin {
     }
 
     js(IR) {
+        compilerOptions {
+            sourceMap.set(false)
+        }
         browser {
             binaries.executable()
             commonWebpackConfig {
                 outputFileName = "diagonal-wipe-icon.js"
+                sourceMaps = false
             }
         }
     }
@@ -39,11 +43,14 @@ kotlin {
     }
     
     sourceSets {
+        commonMain {
+            kotlin.srcDir(layout.buildDirectory.dir("generated/compose/resourceGenerator/kotlin/commonMainResourceAccessors"))
+            kotlin.srcDir(layout.buildDirectory.dir("generated/compose/resourceGenerator/kotlin/commonResClass"))
+        }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)
-            implementation(libs.compose.materialIconsExtended)
             implementation(libs.materialkolor)
             implementation(libs.compose.ui)
             implementation(libs.compose.components.resources)

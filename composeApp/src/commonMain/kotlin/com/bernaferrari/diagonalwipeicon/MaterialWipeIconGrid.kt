@@ -33,16 +33,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.Label
-import androidx.compose.material.icons.automirrored.outlined.LabelOff
-import androidx.compose.material.icons.automirrored.outlined.OpenInNew
-import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowLeft
-import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
-import androidx.compose.material.icons.automirrored.outlined.SpeakerNotes
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -76,8 +66,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
@@ -86,8 +74,10 @@ import androidx.compose.runtime.setValue
 
 data class MaterialWipeIconPair(
     val label: String,
-    val enabledIcon: ImageVector,
-    val disabledIcon: ImageVector,
+    val enabledIcon: WipeIconSource,
+    val disabledIcon: WipeIconSource,
+    val enabledCodeIconName: String? = null,
+    val disabledCodeIconName: String? = null,
 )
 
 data class MaterialWipeIconSection(
@@ -96,146 +86,8 @@ data class MaterialWipeIconSection(
     val icons: List<MaterialWipeIconPair>,
 )
 
-private val coreMaterialWipeIconCatalog = listOf(
-    MaterialWipeIconPair("Alarm Off", Icons.Outlined.Alarm, Icons.Outlined.AlarmOff),
-    MaterialWipeIconPair("Bedtime Off", Icons.Outlined.Bedtime, Icons.Outlined.BedtimeOff),
-    MaterialWipeIconPair("Cloud Off", Icons.Outlined.Cloud, Icons.Outlined.CloudOff),
-    MaterialWipeIconPair("Code Off", Icons.Outlined.Code, Icons.Outlined.CodeOff),
-    MaterialWipeIconPair(
-        "Credit Card Off",
-        Icons.Outlined.CreditCard,
-        Icons.Outlined.CreditCardOff
-    ),
-    MaterialWipeIconPair(
-        "Developer Board Off",
-        Icons.Outlined.DeveloperBoard,
-        Icons.Outlined.DeveloperBoardOff
-    ),
-    MaterialWipeIconPair(
-        "Do Not Disturb Off",
-        Icons.Outlined.DoNotDisturb,
-        Icons.Outlined.DoNotDisturbOff
-    ),
-    MaterialWipeIconPair("Explore Off", Icons.Outlined.Explore, Icons.Outlined.ExploreOff),
-    MaterialWipeIconPair(
-        "File Download Off",
-        Icons.Outlined.FileDownload,
-        Icons.Outlined.FileDownloadOff
-    ),
-    MaterialWipeIconPair("Filter Alt Off", Icons.Outlined.FilterAlt, Icons.Outlined.FilterAltOff),
-    MaterialWipeIconPair(
-        "Filter List Off",
-        Icons.Outlined.FilterList,
-        Icons.Outlined.FilterListOff
-    ),
-    MaterialWipeIconPair("Folder Off", Icons.Outlined.Folder, Icons.Outlined.FolderOff),
-    MaterialWipeIconPair(
-        "Font Download Off",
-        Icons.Outlined.FontDownload,
-        Icons.Outlined.FontDownloadOff
-    ),
-    MaterialWipeIconPair("Headset Off", Icons.Outlined.Headset, Icons.Outlined.HeadsetOff),
-    MaterialWipeIconPair("Hls Off", Icons.Outlined.Hls, Icons.Outlined.HlsOff),
-    MaterialWipeIconPair(
-        "Invert Colors Off",
-        Icons.Outlined.InvertColors,
-        Icons.Outlined.InvertColorsOff
-    ),
-    MaterialWipeIconPair("Key Off", Icons.Outlined.Key, Icons.Outlined.KeyOff),
-    MaterialWipeIconPair(
-        "Label Off", Icons.AutoMirrored.Outlined.Label,
-        Icons.AutoMirrored.Outlined.LabelOff
-    ),
-    MaterialWipeIconPair("Link Off", Icons.Outlined.Link, Icons.Outlined.LinkOff),
-    MaterialWipeIconPair("Mic Off", Icons.Outlined.Mic, Icons.Outlined.MicOff),
-    MaterialWipeIconPair(
-        "Open In New Off",
-        Icons.AutoMirrored.Outlined.OpenInNew, Icons.Outlined.OpenInNewOff
-    ),
-    MaterialWipeIconPair("Piano Off", Icons.Outlined.Piano, Icons.Outlined.PianoOff),
-    MaterialWipeIconPair("Power Off", Icons.Outlined.Power, Icons.Outlined.PowerOff),
-    MaterialWipeIconPair("Public Off", Icons.Outlined.Public, Icons.Outlined.PublicOff),
-    MaterialWipeIconPair("Report Off", Icons.Outlined.Report, Icons.Outlined.ReportOff),
-    MaterialWipeIconPair("Sensors Off", Icons.Outlined.Sensors, Icons.Outlined.SensorsOff),
-    MaterialWipeIconPair(
-        "Speaker Notes Off",
-        Icons.AutoMirrored.Outlined.SpeakerNotes, Icons.Outlined.SpeakerNotesOff
-    ),
-    MaterialWipeIconPair("Subtitles Off", Icons.Outlined.Subtitles, Icons.Outlined.SubtitlesOff),
-    MaterialWipeIconPair("Timer Off", Icons.Outlined.Timer, Icons.Outlined.TimerOff),
-    MaterialWipeIconPair("Videocam Off", Icons.Outlined.Videocam, Icons.Outlined.VideocamOff),
-    MaterialWipeIconPair("Visibility Off", Icons.Outlined.Visibility, Icons.Outlined.VisibilityOff),
-    MaterialWipeIconPair("Wifi Off", Icons.Outlined.Wifi, Icons.Outlined.WifiOff),
-    MaterialWipeIconPair(
-        "Bluetooth Disabled",
-        Icons.Outlined.Bluetooth,
-        Icons.Outlined.BluetoothDisabled
-    ),
-    MaterialWipeIconPair(
-        "Closed Caption Disabled",
-        Icons.Outlined.ClosedCaption,
-        Icons.Outlined.ClosedCaptionDisabled
-    ),
-    MaterialWipeIconPair("Domain Disabled", Icons.Outlined.Domain, Icons.Outlined.DomainDisabled),
-    MaterialWipeIconPair("No Luggage", Icons.Outlined.Luggage, Icons.Outlined.NoLuggage),
-    MaterialWipeIconPair("No Stroller", Icons.Outlined.Stroller, Icons.Outlined.NoStroller),
-    MaterialWipeIconPair(
-        "Person Add Disabled",
-        Icons.Outlined.PersonAdd,
-        Icons.Outlined.PersonAddDisabled
-    ),
-    MaterialWipeIconPair("Print Disabled", Icons.Outlined.Print, Icons.Outlined.PrintDisabled),
-)
-
-private val knownProblemsMaterialWipeIconCatalog = listOf(
-    MaterialWipeIconPair("Group Off", Icons.Outlined.Group, Icons.Outlined.GroupOff),
-    MaterialWipeIconPair(
-        "Content Paste Off",
-        Icons.Outlined.ContentPaste,
-        Icons.Outlined.ContentPasteOff
-    ),
-    MaterialWipeIconPair("Directions Off", Icons.Outlined.Directions, Icons.Outlined.DirectionsOff),
-    MaterialWipeIconPair("Extension Off", Icons.Outlined.Extension, Icons.Outlined.ExtensionOff),
-    MaterialWipeIconPair("Hearing", Icons.Outlined.Hearing, Icons.Outlined.HearingDisabled),
-    MaterialWipeIconPair("Near Me Disabled", Icons.Outlined.NearMe, Icons.Outlined.NearMeDisabled),
-    MaterialWipeIconPair(
-        "No Meeting Room",
-        Icons.Outlined.MeetingRoom,
-        Icons.Outlined.NoMeetingRoom
-    ),
-    MaterialWipeIconPair("Sync Disabled", Icons.Outlined.Sync, Icons.Outlined.SyncDisabled),
-    MaterialWipeIconPair("Update Disabled", Icons.Outlined.Update, Icons.Outlined.UpdateDisabled),
-    MaterialWipeIconPair("Usb Off", Icons.Outlined.Usb, Icons.Outlined.UsbOff),
-    MaterialWipeIconPair("Tv Off", Icons.Outlined.Tv, Icons.Outlined.TvOff),
-    MaterialWipeIconPair(
-        "Videogame Asset Off",
-        Icons.Outlined.VideogameAsset,
-        Icons.Outlined.VideogameAssetOff
-    ),
-    MaterialWipeIconPair("Vpn Key Off", Icons.Outlined.VpnKey, Icons.Outlined.VpnKeyOff),
-    MaterialWipeIconPair("Watch Off", Icons.Outlined.Watch, Icons.Outlined.WatchOff),
-    MaterialWipeIconPair("Web Asset Off", Icons.Outlined.WebAsset, Icons.Outlined.WebAssetOff),
-    MaterialWipeIconPair(
-        "Wifi Tethering Off",
-        Icons.Outlined.WifiTethering,
-        Icons.Outlined.WifiTetheringOff
-    ),
-)
-
-private val iconSections = listOf(
-    MaterialWipeIconSection(
-        title = "Ready to use",
-        subtitle = "These icon pairs morph seamlessly",
-        icons = coreMaterialWipeIconCatalog,
-    ),
-    MaterialWipeIconSection(
-        title = "Needs refinement",
-        subtitle = "There are some size and rotation differences.",
-        icons = knownProblemsMaterialWipeIconCatalog,
-    ),
-)
-
-private val howItWorksPair = coreMaterialWipeIconCatalog.first { it.label == "Power Off" }
+internal fun materialWipeIconLabel(rawLabel: String): String =
+    rawLabel
 
 private data class WipeDirectionOption(
     val direction: WipeDirection,
@@ -256,11 +108,6 @@ private val howItWorksDirectionOptions = listOf(
 private val howItWorksDirectionLabels =
     howItWorksDirectionOptions.associate { it.direction to it.label }
 
-internal fun materialWipeIconLabel(rawLabel: String): String = rawLabel
-    .removeSuffix(" Off")
-    .removeSuffix(" Disabled")
-    .removeSuffix(" off")
-    .removeSuffix(" disabled")
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -537,13 +384,13 @@ private fun HowItWorksFlow(
                     frameHeight = tileHeight,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    DiagonalWipeIconAtProgress(
-                        progress = progress,
-                        basePainter = rememberVectorPainter(iconPair.enabledIcon),
-                        wipedPainter = rememberVectorPainter(iconPair.disabledIcon),
-                        baseTint = allowedColor,
-                        wipedTint = blockedColor,
-                        contentDescription = materialWipeIconLabel(iconPair.label),
+            DiagonalWipeIconAtProgress(
+                progress = progress,
+                basePainter = iconPair.enabledIcon.painter(),
+                wipedPainter = iconPair.disabledIcon.painter(),
+                baseTint = allowedColor,
+                wipedTint = blockedColor,
+                contentDescription = materialWipeIconLabel(iconPair.label),
                         modifier = Modifier.size(squareSize),
                         motion = howItWorksMotion,
                     )
@@ -621,19 +468,19 @@ private fun DirectionArrowGrid(
         // Top row: ↖ ↑ ↗
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             DirectionIconButton(
-                icon = Icons.Outlined.NorthWest,
+                icon = MaterialSymbolIcons.NorthWest,
                 contentDescription = "Bottom-right to top-left",
                 selected = selectedDirection == WipeDirection.BottomRightToTopLeft,
                 onClick = { onDirectionChange(WipeDirection.BottomRightToTopLeft) },
             )
             DirectionIconButton(
-                icon = Icons.Filled.KeyboardArrowUp,
+                icon = MaterialSymbolIcons.KeyboardArrowUp,
                 contentDescription = "Bottom to top",
                 selected = selectedDirection == WipeDirection.BottomToTop,
                 onClick = { onDirectionChange(WipeDirection.BottomToTop) },
             )
             DirectionIconButton(
-                icon = Icons.Outlined.NorthEast,
+                icon = MaterialSymbolIcons.NorthEast,
                 contentDescription = "Bottom-left to top-right",
                 selected = selectedDirection == WipeDirection.BottomLeftToTopRight,
                 onClick = { onDirectionChange(WipeDirection.BottomLeftToTopRight) },
@@ -642,7 +489,7 @@ private fun DirectionArrowGrid(
         // Middle row: ← · →
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             DirectionIconButton(
-                icon = Icons.AutoMirrored.Outlined.KeyboardArrowLeft,
+                icon = MaterialSymbolIcons.KeyboardArrowLeft,
                 contentDescription = "Right to left",
                 selected = selectedDirection == WipeDirection.RightToLeft,
                 onClick = { onDirectionChange(WipeDirection.RightToLeft) },
@@ -650,7 +497,7 @@ private fun DirectionArrowGrid(
             // Center spacer - no background
             Box(modifier = Modifier.size(44.dp))
             DirectionIconButton(
-                icon = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                icon = MaterialSymbolIcons.KeyboardArrowRight,
                 contentDescription = "Left to right",
                 selected = selectedDirection == WipeDirection.LeftToRight,
                 onClick = { onDirectionChange(WipeDirection.LeftToRight) },
@@ -659,19 +506,19 @@ private fun DirectionArrowGrid(
         // Bottom row: ↙ ↓ ↘
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             DirectionIconButton(
-                icon = Icons.Outlined.SouthWest,
+                icon = MaterialSymbolIcons.SouthWest,
                 contentDescription = "Top-right to bottom-left",
                 selected = selectedDirection == WipeDirection.TopRightToBottomLeft,
                 onClick = { onDirectionChange(WipeDirection.TopRightToBottomLeft) },
             )
             DirectionIconButton(
-                icon = Icons.Filled.KeyboardArrowDown,
+                icon = MaterialSymbolIcons.KeyboardArrowDown,
                 contentDescription = "Top to bottom",
                 selected = selectedDirection == WipeDirection.TopToBottom,
                 onClick = { onDirectionChange(WipeDirection.TopToBottom) },
             )
             DirectionIconButton(
-                icon = Icons.Outlined.SouthEast,
+                icon = MaterialSymbolIcons.SouthEast,
                 contentDescription = "Top-left to bottom-right",
                 selected = selectedDirection == WipeDirection.TopLeftToBottomRight,
                 onClick = { onDirectionChange(WipeDirection.TopLeftToBottomRight) },
@@ -682,7 +529,7 @@ private fun DirectionArrowGrid(
 
 @Composable
 private fun DirectionIconButton(
-    icon: ImageVector,
+    icon: WipeIconSource,
     contentDescription: String,
     selected: Boolean,
     onClick: () -> Unit,
@@ -725,7 +572,7 @@ private fun DirectionIconButton(
             modifier = Modifier.fillMaxSize(),
         ) {
             Icon(
-                imageVector = icon,
+                painter = icon.painter(),
                 contentDescription = contentDescription,
                 modifier = Modifier
                     .size(24.dp),
@@ -769,13 +616,13 @@ private fun HowItWorksStep(
 @Composable
 private fun SingleIconWipeLayerPreview(
     progress: Float,
-    icon: ImageVector,
+    icon: WipeIconSource,
     tint: Color,
     entersOnReveal: Boolean,
     motion: DiagonalWipeMotion,
     modifier: Modifier = Modifier,
 ) {
-    val painter = rememberVectorPainter(icon)
+    val painter = icon.painter()
 
     DiagonalWipeIconAtProgress(
         progress = progress,
@@ -794,8 +641,8 @@ private fun SingleIconWipeLayerPreview(
 @Composable
 private fun MaskPreviewWithIcons(
     progress: Float,
-    baseIcon: ImageVector,
-    overlayIcon: ImageVector,
+    baseIcon: WipeIconSource,
+    overlayIcon: WipeIconSource,
     baseTint: Color,
     overlayTint: Color,
     motion: DiagonalWipeMotion,
@@ -814,7 +661,7 @@ private fun MaskPreviewWithIcons(
         // Base icon (A) - visible when rotation is 0-90
         if (rotation < 90f) {
             Icon(
-                imageVector = baseIcon,
+                painter = baseIcon.painter(),
                 contentDescription = null,
                 modifier = Modifier
                     .fillMaxSize()
@@ -829,7 +676,7 @@ private fun MaskPreviewWithIcons(
         // Overlay icon (B) - visible when rotation is 90-180
         if (rotation > 90f) {
             Icon(
-                imageVector = overlayIcon,
+                painter = overlayIcon.painter(),
                 contentDescription = null,
                 modifier = Modifier
                     .fillMaxSize()
@@ -1076,8 +923,8 @@ private fun IconPreviewInteractivePane(
             val stiffness = if (previewSlowMode) Spring.StiffnessVeryLow else Spring.StiffnessLow
             DiagonalWipeIcon(
                 isWiped = previewIsWiped,
-                baseIcon = iconPair.enabledIcon,
-                wipedIcon = iconPair.disabledIcon,
+                basePainter = iconPair.enabledIcon.painter(),
+                wipedPainter = iconPair.disabledIcon.painter(),
                 baseTint = MaterialTheme.colorScheme.primary,
                 wipedTint = MaterialTheme.colorScheme.secondary,
                 contentDescription = materialWipeIconLabel(iconPair.label),
@@ -1098,13 +945,13 @@ private fun IconPreviewInteractivePane(
                 selected = isPlaying,
                 onClick = onTogglePlaying,
                 label = if (isPlaying) "Playing" else "Paused",
-                icon = if (isPlaying) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,
+                icon = if (isPlaying) MaterialSymbolIcons.Pause else MaterialSymbolIcons.PlayArrow,
             )
             PreviewControlButton(
                 selected = previewSlowMode,
                 onClick = onToggleSlow,
                 label = if (previewSlowMode) "0.5x" else "1x",
-                icon = Icons.Outlined.Speed,
+                icon = MaterialSymbolIcons.Speed,
             )
         }
     }
@@ -1115,7 +962,7 @@ private fun PreviewControlButton(
     selected: Boolean,
     onClick: () -> Unit,
     label: String,
-    icon: ImageVector,
+    icon: WipeIconSource,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
@@ -1152,7 +999,7 @@ private fun PreviewControlButton(
             modifier = Modifier.padding(horizontal = 16.dp),
         ) {
             Icon(
-                imageVector = icon,
+                painter = icon.painter(),
                 contentDescription = null,
                 modifier = Modifier.size(20.dp),
                 tint = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
@@ -1227,7 +1074,11 @@ private fun IconPreviewCodePane(
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
-                            imageVector = if (didCopy) Icons.Outlined.Check else Icons.Outlined.ContentCopy,
+                            painter = if (didCopy) {
+                                MaterialSymbolIcons.Check.painter()
+                            } else {
+                                MaterialSymbolIcons.ContentCopy.painter()
+                            },
                             contentDescription = if (didCopy) "Copied" else "Copy code",
                             modifier = Modifier.size(20.dp),
                             tint = if (didCopy) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
@@ -1283,7 +1134,7 @@ private fun KotlinCodeText(code: String) {
                     }
                 }
 
-                token.startsWith("Icons.") || token.startsWith("MaterialTheme.") || token.startsWith(
+                token.startsWith("MaterialTheme.") || token.startsWith("MaterialSymbolIcons.") || token.startsWith(
                     "Modifier."
                 ) -> {
                     withStyle(SpanStyle(color = Color(0xFF8855AA))) {
@@ -1306,35 +1157,34 @@ private fun KotlinCodeText(code: String) {
 }
 
 private fun buildDiagonalWipeUsageSnippet(iconPair: MaterialWipeIconPair): String {
-    val enabledName = guessEnabledIconName(iconPair.label)
-    val disabledName = guessDisabledIconName(iconPair.label)
-    val autoMirroredEnabledLabels = setOf("Label Off", "Open In New Off", "Speaker Notes Off")
-    val enabledIconExpr = if (iconPair.label in autoMirroredEnabledLabels) {
-        "Icons.AutoMirrored.Outlined.$enabledName"
-    } else {
-        "Icons.Outlined.$enabledName"
-    }
-    val disabledIconExpr = if (iconPair.label == "Label Off") {
-        "Icons.AutoMirrored.Outlined.$disabledName"
-    } else {
-        "Icons.Outlined.$disabledName"
-    }
+    val enabledName = iconPair.enabledCodeIconName ?: guessEnabledIconName(iconPair.label)
+    val disabledName = iconPair.disabledCodeIconName ?: guessDisabledIconName(iconPair.label)
+    val enabledResName = toDrawableResourceName(enabledName)
+    val disabledResName = toDrawableResourceName(disabledName)
 
     return """
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.*
-import androidx.compose.material.icons.outlined.*
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.Res
+import org.jetbrains.compose.resources.painterResource
+import com.bernaferrari.diagonalwipeicon.DiagonalWipeIcon
+import com.bernaferrari.diagonalwipeicon.DiagonalWipeIconDefaults
 
 var isWiped by remember { mutableStateOf(false) }
 
+// If you're using this app package, imports above are already valid.
+// Otherwise replace imports for DiagonalWipeIcon/Res with your app package.
+
+val enabledPainter = painterResource(Res.drawable.$enabledResName)
+val disabledPainter = painterResource(Res.drawable.$disabledResName)
+
 DiagonalWipeIcon(
     isWiped = isWiped,
-    baseIcon = $enabledIconExpr,
-    wipedIcon = $disabledIconExpr,
+    basePainter = enabledPainter,
+    wipedPainter = disabledPainter,
     baseTint = MaterialTheme.colorScheme.primary,
     wipedTint = MaterialTheme.colorScheme.secondary,
     contentDescription = "${materialWipeIconLabel(iconPair.label)}",
@@ -1358,6 +1208,12 @@ private fun guessEnabledIconName(label: String): String {
     }
     return toIconSymbol(base)
 }
+
+private fun toDrawableResourceName(codeIconName: String): String =
+    codeIconName
+        .replace(Regex("(?<=[a-z0-9])(?=[A-Z])"), "_")
+        .replace(Regex("(?<=[A-Z])(?=[A-Z][a-z])"), "_")
+        .lowercase() + "_24px"
 
 private fun guessDisabledIconName(label: String): String {
     return when {
@@ -1487,8 +1343,8 @@ internal fun DiagonalWipeIconGridItem(
 
             DiagonalWipeIcon(
                 isWiped = if (isLooping) allIconsWiped else isHovered,
-                baseIcon = iconPair.enabledIcon,
-                wipedIcon = iconPair.disabledIcon,
+                basePainter = iconPair.enabledIcon.painter(),
+                wipedPainter = iconPair.disabledIcon.painter(),
                 baseTint = MaterialTheme.colorScheme.primary,
                 wipedTint = MaterialTheme.colorScheme.secondary,
                 contentDescription = materialWipeIconLabel(iconPair.label),
