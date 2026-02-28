@@ -59,9 +59,9 @@ data class ThemeSeed(
 )
 
 private val themeSeedOptions = listOf(
-    ThemeSeed("Mint", Color(0xFF00FA9A), PaletteStyle.Expressive),
-    ThemeSeed("Gold", Color(0xFFFFD700), PaletteStyle.Expressive),
     ThemeSeed("Salmon", Color(0xFFFF8B7B), PaletteStyle.Expressive),
+    ThemeSeed("Gold", Color(0xFFFFD700), PaletteStyle.Expressive),
+    ThemeSeed("Mint", Color(0xFF00FA9A), PaletteStyle.Expressive),
     ThemeSeed("Azure", Color(0xFF007FFF), PaletteStyle.Expressive),
     ThemeSeed("Rose", Color(0xFFFF007F), PaletteStyle.Expressive),
     ThemeSeed("Slate", Color(0xFF708090), PaletteStyle.Neutral),
@@ -77,6 +77,7 @@ fun App() {
     val systemDark = isSystemInDarkTheme()
     var isDark by remember { mutableStateOf(systemDark) }
     var showHowItWorks by remember { mutableStateOf(false) }
+    var howItWorksDirection by remember { mutableStateOf(WipeDirection.TopLeftToBottomRight) }
     var heroSelectedIcon by remember { mutableStateOf<MaterialWipeIconPair?>(null) }
     val scrollState = rememberScrollState()
 
@@ -216,9 +217,8 @@ fun App() {
             // How it works dialog
             if (showHowItWorks) {
                 HowItWorksDialog(
-                    animationMultiplier = globalAnimationMultiplier,
-                    direction = WipeDirection.TopLeftToBottomRight,
-                    onDirectionChange = {},
+                    direction = howItWorksDirection,
+                    onDirectionChange = { howItWorksDirection = it },
                     onDismiss = { showHowItWorks = false }
                 )
             }

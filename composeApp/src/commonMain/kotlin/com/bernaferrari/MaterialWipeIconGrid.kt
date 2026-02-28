@@ -1,9 +1,7 @@
 package com.bernaferrari
 
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.spring
@@ -20,7 +18,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -29,22 +26,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowForward
 import androidx.compose.material.icons.automirrored.outlined.Label
 import androidx.compose.material.icons.automirrored.outlined.LabelOff
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
@@ -54,7 +43,6 @@ import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.outlined.*
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -88,22 +76,10 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.blur
-import kotlin.math.min
-import androidx.compose.ui.graphics.ClipOp
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.zIndex
 import kotlinx.coroutines.delay
-import androidx.compose.runtime.key
 import androidx.compose.runtime.setValue
 
 data class MaterialWipeIconPair(
@@ -278,9 +254,7 @@ private val howItWorksDirectionOptions = listOf(
 private val howItWorksDirectionLabels =
     howItWorksDirectionOptions.associate { it.direction to it.label }
 
-internal val materialWipeIconCatalogSize = iconSections.sumOf { it.icons.size }
-
-internal fun MaterialWipeIconLabel(rawLabel: String): String = rawLabel
+internal fun materialWipeIconLabel(rawLabel: String): String = rawLabel
     .removeSuffix(" Off")
     .removeSuffix(" Disabled")
     .removeSuffix(" off")
@@ -302,7 +276,7 @@ private fun SectionWithStaggeredGrid(
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         // Section header with dramatic typography
-        MaterialWipeIconSectionHeaderV2(section, accentColor)
+        MaterialWipeIconSectionHeaderV2(section)
 
         // Staggered grid using FlowRow - smaller gaps, larger items
         FlowRow(
@@ -312,7 +286,7 @@ private fun SectionWithStaggeredGrid(
             maxItemsInEachRow = 6
         ) {
             section.icons.forEachIndexed { index, iconPair ->
-                DiagonalWipeIconGridItemV2(
+                DiagonalWipeIconGridItem(
                     iconPair = iconPair,
                     animationMultiplier = animationMultiplier,
                     allIconsWiped = allIconsWiped,
@@ -376,100 +350,13 @@ fun DiagonalWipeIconGridDemo(
 }
 
 @Composable
-private fun HowItWorksTeaserCard(
-    animationMultiplier: Float,
-    direction: WipeDirection,
-    onDirectionChange: (WipeDirection) -> Unit,
-    onOpenDialog: () -> Unit,
-) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isHovered by interactionSource.collectIsHoveredAsState()
-    val isPressed by interactionSource.collectIsPressedAsState()
-
-    val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.98f else 1f,
-        animationSpec = spring(stiffness = Spring.StiffnessMedium),
-    )
-
-    val arrowOffset by animateFloatAsState(
-        targetValue = if (isHovered) 6f else 0f,
-        animationSpec = spring(stiffness = Spring.StiffnessMedium),
-    )
-
-    val borderWidth by animateDpAsState(
-        targetValue = if (isHovered) 2.dp else 0.dp,
-        animationSpec = spring(stiffness = Spring.StiffnessMedium),
-    )
-
-    Surface(
-        shape = RoundedCornerShape(16.dp),
-        tonalElevation = if (isHovered) 2.dp else 0.dp,
-        shadowElevation = 0.dp,
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-        modifier = Modifier
-            .widthIn(max = 600.dp)
-            .padding(vertical = 8.dp)
-            .graphicsLayer { scaleX = scale; scaleY = scale }
-            .border(
-                width = borderWidth,
-                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
-                shape = RoundedCornerShape(16.dp)
-            )
-            .pointerHoverIcon(PointerIcon.Hand)
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                onClick = onOpenDialog,
-            ),
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp, vertical = 20.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            // Left: Text content
-            Column(
-                modifier = Modifier.weight(1f),
-            ) {
-                Text(
-                    text = "How it works",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
-                    ),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = "Explore the animation",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-
-            // Arrow
-            Icon(
-                imageVector = Icons.AutoMirrored.Outlined.ArrowForward,
-                contentDescription = null,
-                modifier = Modifier
-                    .size(20.dp)
-                    .graphicsLayer { translationX = arrowOffset },
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-    }
-}
-
-@Composable
 internal fun HowItWorksDialog(
-    animationMultiplier: Float,
     direction: WipeDirection,
     onDirectionChange: (WipeDirection) -> Unit,
     onDismiss: () -> Unit,
 ) {
     // Always use slow mode for "How it works" dialog so users can see the animation clearly
-    val isWiped = rememberLoopingWipe(SlowAnimationMultiplier)
+    val isWiped = rememberLoopingWipe()
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             shape = RoundedCornerShape(28.dp),
@@ -487,7 +374,7 @@ internal fun HowItWorksDialog(
                 Text(
                     text = "How it works",
                     style = MaterialTheme.typography.headlineSmall.copy(
-                        fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
+                        fontWeight = FontWeight.SemiBold
                     ),
                     color = MaterialTheme.colorScheme.onSurface,
                 )
@@ -506,7 +393,7 @@ internal fun HowItWorksDialog(
                     direction = direction,
                     tileHeight = 100.dp,
                     squareSize = 64.dp,
-                    animationMultiplier = animationMultiplier,
+                    animationMultiplier = SlowAnimationMultiplier,
                 )
                 Text(
                     text = "One mask controls both icons, so they always stay in sync.",
@@ -537,8 +424,6 @@ private fun HowItWorksFlow(
 ) {
     val allowedColor = MaterialTheme.colorScheme.primary
     val blockedColor = MaterialTheme.colorScheme.secondary
-    val maskBaseColor = allowedColor
-    val maskRevealColor = blockedColor
     // Use spring with stiffness based on speed mode
     val stiffness = if (animationMultiplier > 1f) Spring.StiffnessVeryLow else Spring.StiffnessLow
     val howItWorksMotion = DiagonalWipeIconDefaults.spring(
@@ -658,7 +543,7 @@ private fun HowItWorksFlow(
                         wipedPainter = rememberVectorPainter(iconPair.disabledIcon),
                         baseTint = allowedColor,
                         wipedTint = blockedColor,
-                        contentDescription = MaterialWipeIconLabel(iconPair.label),
+                        contentDescription = materialWipeIconLabel(iconPair.label),
                         modifier = Modifier.size(squareSize),
                         motion = howItWorksMotion,
                     )
@@ -713,7 +598,7 @@ private fun HowItWorksDirectionSelector(
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelMedium.copy(
-                    fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
+                    fontWeight = FontWeight.Medium
                 ),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.clearAndSetSemantics { },
@@ -723,7 +608,6 @@ private fun HowItWorksDirectionSelector(
 }
 
 @Composable
-@Suppress("DEPRECATION")
 private fun DirectionArrowGrid(
     selectedDirection: WipeDirection,
     onDirectionChange: (WipeDirection) -> Unit,
@@ -739,19 +623,16 @@ private fun DirectionArrowGrid(
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             DirectionIconButton(
                 icon = Icons.Outlined.NorthWest,
-                rotation = 0f, // ↖ pointing up-left = FROM bottom-right TO top-left
                 selected = selectedDirection == WipeDirection.BottomRightToTopLeft,
                 onClick = { onDirectionChange(WipeDirection.BottomRightToTopLeft) },
             )
             DirectionIconButton(
                 icon = Icons.Filled.KeyboardArrowUp,
-                rotation = 0f, // ↑ pointing up = FROM bottom TO top
                 selected = selectedDirection == WipeDirection.BottomToTop,
                 onClick = { onDirectionChange(WipeDirection.BottomToTop) },
             )
             DirectionIconButton(
                 icon = Icons.Outlined.NorthEast,
-                rotation = 0f, // ↗ pointing up-right = FROM bottom-left TO top-right
                 selected = selectedDirection == WipeDirection.BottomLeftToTopRight,
                 onClick = { onDirectionChange(WipeDirection.BottomLeftToTopRight) },
             )
@@ -760,7 +641,6 @@ private fun DirectionArrowGrid(
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             DirectionIconButton(
                 icon = Icons.Filled.KeyboardArrowLeft,
-                rotation = 0f, // ← pointing left = FROM right TO left
                 selected = selectedDirection == WipeDirection.RightToLeft,
                 onClick = { onDirectionChange(WipeDirection.RightToLeft) },
             )
@@ -768,7 +648,6 @@ private fun DirectionArrowGrid(
             Box(modifier = Modifier.size(44.dp))
             DirectionIconButton(
                 icon = Icons.Filled.KeyboardArrowRight,
-                rotation = 0f, // → pointing right = FROM left TO right
                 selected = selectedDirection == WipeDirection.LeftToRight,
                 onClick = { onDirectionChange(WipeDirection.LeftToRight) },
             )
@@ -777,19 +656,16 @@ private fun DirectionArrowGrid(
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             DirectionIconButton(
                 icon = Icons.Outlined.SouthWest,
-                rotation = 0f, // ↙ pointing down-left = FROM top-right TO bottom-left
                 selected = selectedDirection == WipeDirection.TopRightToBottomLeft,
                 onClick = { onDirectionChange(WipeDirection.TopRightToBottomLeft) },
             )
             DirectionIconButton(
                 icon = Icons.Filled.KeyboardArrowDown,
-                rotation = 0f, // ↓ pointing down = FROM top TO bottom
                 selected = selectedDirection == WipeDirection.TopToBottom,
                 onClick = { onDirectionChange(WipeDirection.TopToBottom) },
             )
             DirectionIconButton(
                 icon = Icons.Outlined.SouthEast,
-                rotation = 0f, // ↘ pointing down-right = FROM top-left TO bottom-right
                 selected = selectedDirection == WipeDirection.TopLeftToBottomRight,
                 onClick = { onDirectionChange(WipeDirection.TopLeftToBottomRight) },
             )
@@ -799,8 +675,7 @@ private fun DirectionArrowGrid(
 
 @Composable
 private fun DirectionIconButton(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    rotation: Float,
+    icon: ImageVector,
     selected: Boolean,
     onClick: () -> Unit,
 ) {
@@ -819,19 +694,15 @@ private fun DirectionIconButton(
 
     Surface(
         shape = RoundedCornerShape(12.dp),
-        tonalElevation = when {
-            selected -> 2.dp
-            isHovered -> 1.dp
-            else -> 0.dp
-        },
+        color = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant.copy(
+            alpha = 0.3f
+        ),
         modifier = Modifier
             .size(44.dp)
-            .zIndex(1f)
             .graphicsLayer {
                 scaleX = scale
                 scaleY = scale
             }
-            // Compose Web can surface text-cursor from descendants; force hand for this hit target.
             .pointerHoverIcon(PointerIcon.Hand, overrideDescendants = true)
             .clickable(
                 interactionSource = interactionSource,
@@ -847,9 +718,8 @@ private fun DirectionIconButton(
                 imageVector = icon,
                 contentDescription = null,
                 modifier = Modifier
-                    .size(24.dp)
-                    .graphicsLayer { rotationZ = rotation },
-                tint = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                    .size(24.dp),
+                tint = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }
@@ -910,69 +780,6 @@ private fun SingleIconWipeLayerPreview(
     )
 }
 
-@Composable
-private fun OverlappingIconsPreview(
-    baseIcon: ImageVector,
-    overlayIcon: ImageVector,
-    baseTint: Color,
-    overlayTint: Color,
-    modifier: Modifier = Modifier,
-) {
-    Box(
-        modifier = modifier,
-        contentAlignment = Alignment.Center,
-    ) {
-        // Base icon - offset up-left, rotated slightly
-        Icon(
-            imageVector = baseIcon,
-            contentDescription = null,
-            modifier = Modifier
-                .size(28.dp)
-                .graphicsLayer {
-                    translationX = -6f
-                    translationY = -6f
-                    rotationZ = -8f
-                },
-            tint = baseTint.copy(alpha = 0.7f),
-        )
-        // Overlay icon - offset down-right, rotated opposite
-        Icon(
-            imageVector = overlayIcon,
-            contentDescription = null,
-            modifier = Modifier
-                .size(28.dp)
-                .graphicsLayer {
-                    translationX = 6f
-                    translationY = 6f
-                    rotationZ = 8f
-                },
-            tint = overlayTint.copy(alpha = 0.7f),
-        )
-    }
-}
-
-
-@Composable
-private fun IconWipePreview(
-    isWiped: Boolean,
-    iconPair: MaterialWipeIconPair,
-    allowedColor: Color,
-    blockedColor: Color,
-    direction: WipeDirection,
-    modifier: Modifier = Modifier,
-) {
-    DiagonalWipeIcon(
-        isWiped = isWiped,
-        baseIcon = iconPair.enabledIcon,
-        wipedIcon = iconPair.disabledIcon,
-        baseTint = allowedColor,
-        wipedTint = blockedColor,
-        contentDescription = null,
-        motion = DiagonalWipeIconDefaults.tween(direction = direction),
-        modifier = modifier
-            .padding(2.dp),
-    )
-}
 
 @Composable
 private fun MaskPreviewWithIcons(
@@ -1025,6 +832,7 @@ private fun MaskPreviewWithIcons(
         }
 
         // Wipe line showing the transition
+        val boundaryColor = MaterialTheme.colorScheme.tertiary
         if (clampedProgress in 0.2f..0.8f) {
             Canvas(modifier = Modifier.fillMaxSize()) {
                 val (start, end) = buildWipeBoundaryLine(
@@ -1034,7 +842,7 @@ private fun MaskPreviewWithIcons(
                     direction = motion.direction,
                 ) ?: return@Canvas
                 drawLine(
-                    color = Color.White.copy(alpha = 0.8f),
+                    color = boundaryColor.copy(alpha = 0.8f),
                     start = start,
                     end = end,
                     strokeWidth = 2.dp.toPx(),
@@ -1045,93 +853,15 @@ private fun MaskPreviewWithIcons(
 }
 
 @Composable
-private fun DiagonalWipeColorPreview(
-    isWiped: Boolean,
-    baseColor: Color,
-    revealColor: Color,
-    showBoundary: Boolean,
-    direction: WipeDirection,
-    modifier: Modifier = Modifier,
-) {
-    val revealPath = remember { Path() }
-    val wipePathScratch = remember { WipePathScratch() }
-
-    val transition = updateTransition(targetState = isWiped, label = "howItWorksWipe")
-    val revealProgress by transition.animateFloat(
-        transitionSpec = {
-            if (false isTransitioningTo true) {
-                tween(
-                    durationMillis = DiagonalWipeIconDefaults.WipeInDurationMillis,
-                    easing = DiagonalWipeIconDefaults.WipeInEasing,
-                )
-            } else {
-                tween(
-                    durationMillis = DiagonalWipeIconDefaults.WipeOutDurationMillis,
-                    easing = DiagonalWipeIconDefaults.WipeOutEasing,
-                )
-            }
-        },
-        label = "howItWorksRevealProgress",
-    ) { isBlocked ->
-        if (isBlocked) 1f else 0f
-    }
-
-    Canvas(
-        modifier = modifier
-            .clip(RoundedCornerShape(12.dp)),
-    ) {
-        val progress = revealProgress.coerceIn(0f, 1f)
-        drawRect(baseColor)
-
-        if (progress <= 0f) return@Canvas
-
-        buildWipeRevealPath(
-            path = revealPath,
-            width = size.width,
-            height = size.height,
-            progress = progress,
-            direction = direction,
-            scratch = wipePathScratch,
-        )
-        clipPath(path = revealPath, clipOp = ClipOp.Intersect) {
-            drawRect(revealColor)
-        }
-
-        if (showBoundary) {
-            val (start, end) = buildWipeBoundaryLine(
-                width = size.width,
-                height = size.height,
-                progress = progress,
-                direction = direction,
-            ) ?: return@Canvas
-            drawLine(
-                color = Color.Black.copy(alpha = 0.2f),
-                start = start,
-                end = end,
-                strokeWidth = 4.dp.toPx(),
-            )
-            drawLine(
-                color = Color.White.copy(alpha = 0.9f),
-                start = start,
-                end = end,
-                strokeWidth = 2.dp.toPx(),
-            )
-        }
-    }
-}
-
-@Composable
-private fun rememberLoopingWipe(
-    animationMultiplier: Float,
-): Boolean {
+private fun rememberLoopingWipe(): Boolean {
     var blocked by remember { mutableStateOf(false) }
     val enableDelay = autoPlayDelay(
         DiagonalWipeIconDefaults.WipeInDurationMillis,
-        animationMultiplier,
+        SlowAnimationMultiplier,
     )
     val disableDelay = autoPlayDelay(
         DiagonalWipeIconDefaults.WipeOutDurationMillis,
-        animationMultiplier,
+        SlowAnimationMultiplier,
     )
 
     LaunchedEffect(enableDelay, disableDelay) {
@@ -1144,150 +874,6 @@ private fun rememberLoopingWipe(
     }
 
     return blocked
-}
-
-@Composable
-private fun MaterialWipeIconSectionHeader(section: MaterialWipeIconSection) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 32.dp, bottom = 8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text(
-            text = section.title,
-            style = MaterialTheme.typography.titleLarge.copy(
-                fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
-            ),
-            color = MaterialTheme.colorScheme.onSurface,
-        )
-        Spacer(modifier = Modifier.height(6.dp))
-        Text(
-            text = section.subtitle,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
-}
-
-@Composable
-private fun DiagonalWipeIconGridItem(
-    iconPair: MaterialWipeIconPair,
-    animationMultiplier: Float,
-    allIconsWiped: Boolean,
-    isLooping: Boolean,
-    onOpen: () -> Unit,
-) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isHovered by interactionSource.collectIsHoveredAsState()
-    val isPressed by interactionSource.collectIsPressedAsState()
-    val enableDuration =
-        scaledDuration(DiagonalWipeIconDefaults.WipeInDurationMillis, animationMultiplier)
-    val disableDuration =
-        scaledDuration(DiagonalWipeIconDefaults.WipeOutDurationMillis, animationMultiplier)
-
-    // Press feedback animation with slower exit for smoother feel
-    val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.96f else 1f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessMedium,
-        ),
-        label = "cardScale",
-    )
-
-    // Animate tonal elevation for smooth enter/exit
-    val tonalElevation by animateDpAsState(
-        targetValue = when {
-            isPressed -> 2.dp
-            isHovered -> 1.dp
-            else -> 0.dp
-        },
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioNoBouncy,
-            stiffness = Spring.StiffnessLow, // Slower, more graceful
-        ),
-        label = "cardElevation",
-    )
-
-    // Clean card: no shadow, uses tonal elevation only
-    Surface(
-        shape = RoundedCornerShape(20.dp),
-        tonalElevation = tonalElevation,
-        shadowElevation = 0.dp,
-        color = MaterialTheme.colorScheme.surface,
-        modifier = Modifier
-            .size(170.dp)
-            .graphicsLayer { scaleX = scale; scaleY = scale }
-            .pointerHoverIcon(PointerIcon.Hand)
-            .hoverable(interactionSource)
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                onClick = onOpen,
-            ),
-    ) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-        ) {
-            // Icon container with animated background
-            val backgroundAlpha by animateFloatAsState(
-                targetValue = when {
-                    isPressed -> 0.6f
-                    isHovered -> 0.5f
-                    else -> 0.4f
-                },
-                animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing),
-                label = "iconBackgroundAlpha",
-            )
-            val backgroundColor by animateColorAsState(
-                targetValue = when {
-                    isPressed -> MaterialTheme.colorScheme.primaryContainer
-                    isHovered -> MaterialTheme.colorScheme.primaryContainer
-                    else -> MaterialTheme.colorScheme.surfaceVariant
-                },
-                animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing),
-                label = "iconBackgroundColor",
-            )
-            Box(
-                modifier = Modifier
-                    .size(80.dp)
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(backgroundColor.copy(alpha = backgroundAlpha)),
-                contentAlignment = Alignment.Center,
-            ) {
-                DiagonalWipeIcon(
-                    isWiped = if (isLooping) allIconsWiped else isHovered,
-                    baseIcon = iconPair.enabledIcon,
-                    wipedIcon = iconPair.disabledIcon,
-                    baseTint = MaterialTheme.colorScheme.primary,
-                    wipedTint = MaterialTheme.colorScheme.secondary,
-                    contentDescription = MaterialWipeIconLabel(iconPair.label),
-                    modifier = Modifier.size(44.dp),
-                    motion = DiagonalWipeIconDefaults.tween(
-                        wipeInDurationMillis = enableDuration,
-                        wipeOutDurationMillis = disableDuration,
-                    ),
-                )
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = MaterialWipeIconLabel(iconPair.label),
-                style = MaterialTheme.typography.labelLarge,
-                color = when {
-                    isPressed -> MaterialTheme.colorScheme.primary
-                    isHovered -> MaterialTheme.colorScheme.onSurface
-                    else -> MaterialTheme.colorScheme.onSurfaceVariant
-                },
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 16.dp),
-            )
-        }
-    }
 }
 
 @Composable
@@ -1361,7 +947,6 @@ private fun IconPreviewDialog(
                             previewSlowMode = previewSlowMode,
                             previewIsWiped = previewIsWiped,
                             previewInteractionSource = previewInteractionSource,
-                            stiffness = stiffness,
                             onPreviewTap = {
                                 if (isPlaying) {
                                     isPlaying = false
@@ -1395,7 +980,7 @@ private fun IconPreviewDialog(
                 } else {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
                         modifier = Modifier.fillMaxWidth(),
                     ) {
                         IconPreviewInteractivePane(
@@ -1404,7 +989,6 @@ private fun IconPreviewDialog(
                             previewSlowMode = previewSlowMode,
                             previewIsWiped = previewIsWiped,
                             previewInteractionSource = previewInteractionSource,
-                            stiffness = stiffness,
                             onPreviewTap = {
                                 if (isPlaying) {
                                     isPlaying = false
@@ -1448,7 +1032,6 @@ private fun IconPreviewInteractivePane(
     previewSlowMode: Boolean,
     previewIsWiped: Boolean,
     previewInteractionSource: MutableInteractionSource,
-    stiffness: Float,
     onPreviewTap: () -> Unit,
     onTogglePlaying: () -> Unit,
     onToggleSlow: () -> Unit,
@@ -1459,9 +1042,9 @@ private fun IconPreviewInteractivePane(
         modifier = modifier,
     ) {
         Text(
-            text = MaterialWipeIconLabel(iconPair.label),
+            text = materialWipeIconLabel(iconPair.label),
             style = MaterialTheme.typography.headlineSmall.copy(
-                fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
+                fontWeight = FontWeight.SemiBold
             ),
             color = MaterialTheme.colorScheme.onSurface,
             textAlign = TextAlign.Center,
@@ -1488,7 +1071,7 @@ private fun IconPreviewInteractivePane(
                 wipedIcon = iconPair.disabledIcon,
                 baseTint = MaterialTheme.colorScheme.primary,
                 wipedTint = MaterialTheme.colorScheme.secondary,
-                contentDescription = MaterialWipeIconLabel(iconPair.label),
+                contentDescription = materialWipeIconLabel(iconPair.label),
                 modifier = Modifier.size(120.dp),
                 motion = DiagonalWipeIconDefaults.spring(
                     wipeInStiffness = stiffness,
@@ -1609,7 +1192,7 @@ private fun IconPreviewCodePane(
                 Text(
                     text = "Code",
                     style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
+                        fontWeight = FontWeight.SemiBold
                     ),
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.weight(1f),
@@ -1745,7 +1328,7 @@ DiagonalWipeIcon(
     wipedIcon = $disabledIconExpr,
     baseTint = MaterialTheme.colorScheme.primary,
     wipedTint = MaterialTheme.colorScheme.secondary,
-    contentDescription = "${MaterialWipeIconLabel(iconPair.label)}",
+    contentDescription = "${materialWipeIconLabel(iconPair.label)}",
     modifier = Modifier.size(120.dp),
     // Optional: customize timing/direction or use springs.
     // motion = DiagonalWipeIconDefaults.tween(
@@ -1785,14 +1368,9 @@ private fun toIconSymbol(raw: String): String = raw
             .replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
     }
 
-// ============================================
-// NEW V2 COMPONENTS WITH GLASSMORPHISM & GLOW
-// ============================================
-
 @Composable
 internal fun MaterialWipeIconSectionHeaderV2(
-    section: MaterialWipeIconSection,
-    accentColor: Color
+    section: MaterialWipeIconSection
 ) {
     Column(
         modifier = Modifier
@@ -1820,7 +1398,7 @@ internal fun MaterialWipeIconSectionHeaderV2(
 }
 
 @Composable
-internal fun DiagonalWipeIconGridItemV2(
+internal fun DiagonalWipeIconGridItem(
     iconPair: MaterialWipeIconPair,
     animationMultiplier: Float,
     allIconsWiped: Boolean,
@@ -1895,7 +1473,8 @@ internal fun DiagonalWipeIconGridItemV2(
             contentAlignment = Alignment.Center
         ) {
             // Stiffness: lower = slower. Slow mode uses even lower stiffness
-            val stiffness = if (animationMultiplier > 1f) Spring.StiffnessVeryLow else Spring.StiffnessLow
+            val stiffness =
+                if (animationMultiplier > 1f) Spring.StiffnessVeryLow else Spring.StiffnessLow
 
             DiagonalWipeIcon(
                 isWiped = if (isLooping) allIconsWiped else isHovered,
@@ -1903,7 +1482,7 @@ internal fun DiagonalWipeIconGridItemV2(
                 wipedIcon = iconPair.disabledIcon,
                 baseTint = MaterialTheme.colorScheme.primary,
                 wipedTint = MaterialTheme.colorScheme.secondary,
-                contentDescription = MaterialWipeIconLabel(iconPair.label),
+                contentDescription = materialWipeIconLabel(iconPair.label),
                 modifier = Modifier.fillMaxSize(),
                 motion = DiagonalWipeIconDefaults.spring(
                     wipeInStiffness = stiffness,
@@ -1916,7 +1495,7 @@ internal fun DiagonalWipeIconGridItemV2(
 
         // Label
         Text(
-            text = MaterialWipeIconLabel(iconPair.label),
+            text = materialWipeIconLabel(iconPair.label),
             style = MaterialTheme.typography.bodyMedium.copy(
                 fontWeight = if (isHovered) FontWeight.SemiBold else FontWeight.Medium
             ),
