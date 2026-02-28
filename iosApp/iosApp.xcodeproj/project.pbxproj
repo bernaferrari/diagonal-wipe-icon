@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		F9A6E74482ADC6F4BDED72D6 /* VPN.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VPN.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F9A6E74482ADC6F4BDED72D6 /* DiagonalWipeIcon.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DiagonalWipeIcon.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -59,7 +59,7 @@
 		0CC5A7229ACAC29759F17993 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				F9A6E74482ADC6F4BDED72D6 /* VPN.app */,
+				F9A6E74482ADC6F4BDED72D6 /* DiagonalWipeIcon.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -87,7 +87,7 @@
 			packageProductDependencies = (
 			);
 			productName = iosApp;
-			productReference = F9A6E74482ADC6F4BDED72D6 /* VPN.app */;
+			productReference = F9A6E74482ADC6F4BDED72D6 /* DiagonalWipeIcon.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */

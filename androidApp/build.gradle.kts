@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.bernaferrari"
+    namespace = "com.bernaferrari.diagonalwipeicon"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "com.bernaferrari"
+        applicationId = "com.bernaferrari.diagonalwipeicon"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1

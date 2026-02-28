@@ -1,4 +1,4 @@
-package com.bernaferrari
+package com.bernaferrari.diagonalwipeicon
 
 interface Platform {
     val name: String

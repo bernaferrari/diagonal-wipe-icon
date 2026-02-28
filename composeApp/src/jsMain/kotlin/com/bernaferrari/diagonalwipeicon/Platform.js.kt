@@ -1,4 +1,4 @@
-package com.bernaferrari
+package com.bernaferrari.diagonalwipeicon
 
 class JsPlatform : Platform {
     override val name: String = "Web"

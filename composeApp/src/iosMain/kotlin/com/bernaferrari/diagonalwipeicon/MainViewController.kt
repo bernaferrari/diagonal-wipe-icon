@@ -1,4 +1,4 @@
-package com.bernaferrari
+package com.bernaferrari.diagonalwipeicon
 
 import androidx.compose.ui.window.ComposeUIViewController
 

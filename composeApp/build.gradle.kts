@@ -9,7 +9,7 @@ plugins {
 
 kotlin {
     androidLibrary {
-        namespace = "com.bernaferrari.shared"
+        namespace = "com.bernaferrari.diagonalwipeicon.shared"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_17)

@@ -1,4 +1,4 @@
-package com.bernaferrari
+package com.bernaferrari.diagonalwipeicon
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
@@ -37,10 +37,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Label
 import androidx.compose.material.icons.automirrored.outlined.LabelOff
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.outlined.SpeakerNotes
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.Icon
@@ -78,7 +78,9 @@ import androidx.compose.foundation.layout.FlowRow
 
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import kotlinx.coroutines.delay
 import androidx.compose.runtime.setValue
 
@@ -264,7 +266,6 @@ internal fun materialWipeIconLabel(rawLabel: String): String = rawLabel
 @Composable
 private fun SectionWithStaggeredGrid(
     section: MaterialWipeIconSection,
-    sectionIndex: Int,
     animationMultiplier: Float,
     allIconsWiped: Boolean,
     isLooping: Boolean,
@@ -285,7 +286,7 @@ private fun SectionWithStaggeredGrid(
             verticalArrangement = Arrangement.spacedBy(0.dp),
             maxItemsInEachRow = 6
         ) {
-            section.icons.forEachIndexed { index, iconPair ->
+            section.icons.forEach { iconPair ->
                 DiagonalWipeIconGridItem(
                     iconPair = iconPair,
                     animationMultiplier = animationMultiplier,
@@ -327,10 +328,9 @@ fun DiagonalWipeIconGridDemo(
             .padding(horizontal = 24.dp, vertical = 32.dp),
         verticalArrangement = Arrangement.spacedBy(48.dp)
     ) {
-        iconSections.forEachIndexed { sectionIndex, section ->
+        iconSections.forEach { section ->
             SectionWithStaggeredGrid(
                 section = section,
-                sectionIndex = sectionIndex,
                 animationMultiplier = animationMultiplier,
                 allIconsWiped = allIconsWiped,
                 isLooping = isLooping,
@@ -379,7 +379,7 @@ internal fun HowItWorksDialog(
                     color = MaterialTheme.colorScheme.onSurface,
                 )
                 Text(
-                    text = "The first tiles show the two icon layers; then mask preview and final result.",
+                    text = "SF Symbols has built-in symbol transitions. Material Icons does not, so this gives you the same kind of morph without hand-drawing a custom vector.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -396,7 +396,7 @@ internal fun HowItWorksDialog(
                     animationMultiplier = SlowAnimationMultiplier,
                 )
                 Text(
-                    text = "One mask controls both icons, so they always stay in sync.",
+                    text = "Use two standard Material icons and one animated mask. It is much faster than building and maintaining custom vector paths by hand.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -601,7 +601,6 @@ private fun HowItWorksDirectionSelector(
                     fontWeight = FontWeight.Medium
                 ),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.clearAndSetSemantics { },
             )
         }
     }
@@ -623,16 +622,19 @@ private fun DirectionArrowGrid(
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             DirectionIconButton(
                 icon = Icons.Outlined.NorthWest,
+                contentDescription = "Bottom-right to top-left",
                 selected = selectedDirection == WipeDirection.BottomRightToTopLeft,
                 onClick = { onDirectionChange(WipeDirection.BottomRightToTopLeft) },
             )
             DirectionIconButton(
                 icon = Icons.Filled.KeyboardArrowUp,
+                contentDescription = "Bottom to top",
                 selected = selectedDirection == WipeDirection.BottomToTop,
                 onClick = { onDirectionChange(WipeDirection.BottomToTop) },
             )
             DirectionIconButton(
                 icon = Icons.Outlined.NorthEast,
+                contentDescription = "Bottom-left to top-right",
                 selected = selectedDirection == WipeDirection.BottomLeftToTopRight,
                 onClick = { onDirectionChange(WipeDirection.BottomLeftToTopRight) },
             )
@@ -640,14 +642,16 @@ private fun DirectionArrowGrid(
         // Middle row: ← · →
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             DirectionIconButton(
-                icon = Icons.Filled.KeyboardArrowLeft,
+                icon = Icons.AutoMirrored.Outlined.KeyboardArrowLeft,
+                contentDescription = "Right to left",
                 selected = selectedDirection == WipeDirection.RightToLeft,
                 onClick = { onDirectionChange(WipeDirection.RightToLeft) },
             )
             // Center spacer - no background
             Box(modifier = Modifier.size(44.dp))
             DirectionIconButton(
-                icon = Icons.Filled.KeyboardArrowRight,
+                icon = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                contentDescription = "Left to right",
                 selected = selectedDirection == WipeDirection.LeftToRight,
                 onClick = { onDirectionChange(WipeDirection.LeftToRight) },
             )
@@ -656,16 +660,19 @@ private fun DirectionArrowGrid(
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             DirectionIconButton(
                 icon = Icons.Outlined.SouthWest,
+                contentDescription = "Top-right to bottom-left",
                 selected = selectedDirection == WipeDirection.TopRightToBottomLeft,
                 onClick = { onDirectionChange(WipeDirection.TopRightToBottomLeft) },
             )
             DirectionIconButton(
                 icon = Icons.Filled.KeyboardArrowDown,
+                contentDescription = "Top to bottom",
                 selected = selectedDirection == WipeDirection.TopToBottom,
                 onClick = { onDirectionChange(WipeDirection.TopToBottom) },
             )
             DirectionIconButton(
                 icon = Icons.Outlined.SouthEast,
+                contentDescription = "Top-left to bottom-right",
                 selected = selectedDirection == WipeDirection.TopLeftToBottomRight,
                 onClick = { onDirectionChange(WipeDirection.TopLeftToBottomRight) },
             )
@@ -676,6 +683,7 @@ private fun DirectionArrowGrid(
 @Composable
 private fun DirectionIconButton(
     icon: ImageVector,
+    contentDescription: String,
     selected: Boolean,
     onClick: () -> Unit,
 ) {
@@ -703,10 +711,12 @@ private fun DirectionIconButton(
                 scaleX = scale
                 scaleY = scale
             }
+            .semantics { this.selected = selected }
             .pointerHoverIcon(PointerIcon.Hand, overrideDescendants = true)
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
+                role = Role.RadioButton,
                 onClick = onClick,
             ),
     ) {
@@ -716,7 +726,7 @@ private fun DirectionIconButton(
         ) {
             Icon(
                 imageVector = icon,
-                contentDescription = null,
+                contentDescription = contentDescription,
                 modifier = Modifier
                     .size(24.dp),
                 tint = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
@@ -892,10 +902,7 @@ private fun IconPreviewDialog(
     val isPreviewHovered by previewInteractionSource.collectIsHoveredAsState()
     val codeSnippet = remember(iconPair) { buildDiagonalWipeUsageSnippet(iconPair) }
 
-    // Animation timing: custom stiffness values for better feel
-    // Normal: 150f (relaxed), Slow: 50f (very relaxed)
     val isSlow = previewSlowMode || baseAnimationMultiplier > 1f
-    val stiffness = if (isSlow) 50f else 150f
     val previewIsWiped = when {
         isPlaying -> blocked
         hasHoveredWhilePaused -> isPreviewHovered
@@ -955,7 +962,8 @@ private fun IconPreviewDialog(
                                     hasHoveredWhilePaused = false
                                 } else {
                                     blocked = false
-                                    isPlaying = true
+                                    hasHoveredWhilePaused = false
+                                    pausedTapWiped = !pausedTapWiped
                                 }
                             },
                             onTogglePlaying = {
@@ -997,7 +1005,8 @@ private fun IconPreviewDialog(
                                     hasHoveredWhilePaused = false
                                 } else {
                                     blocked = false
-                                    isPlaying = true
+                                    hasHoveredWhilePaused = false
+                                    pausedTapWiped = !pausedTapWiped
                                 }
                             },
                             onTogglePlaying = {

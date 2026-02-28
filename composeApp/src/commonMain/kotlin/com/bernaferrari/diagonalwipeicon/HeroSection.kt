@@ -1,4 +1,4 @@
-package com.bernaferrari
+package com.bernaferrari.diagonalwipeicon
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
@@ -42,7 +42,6 @@ fun HeroSection(
     modifier: Modifier = Modifier,
     selectedSeed: ThemeSeed,
     onOpenHowItWorks: () -> Unit,
-    onScrollToGrid: () -> Unit,
     onIconClick: (MaterialWipeIconPair) -> Unit,
 ) {
     val backgroundColor = MaterialTheme.colorScheme.background

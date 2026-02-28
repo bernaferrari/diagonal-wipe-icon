@@ -1,4 +1,4 @@
-package com.bernaferrari
+package com.bernaferrari.diagonalwipeicon
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.*
@@ -9,7 +9,6 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -40,6 +39,10 @@ import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -47,7 +50,6 @@ import com.materialkolor.DynamicMaterialTheme
 import com.materialkolor.PaletteStyle
 import com.materialkolor.dynamiccolor.ColorSpec
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -111,14 +113,6 @@ fun App() {
     val uriHandler = LocalUriHandler.current
     val isSlowMode = globalAnimationMultiplier > 1f
 
-    // Handle scroll to grid using coroutine
-    val scope = rememberCoroutineScope()
-    val scrollToGrid: () -> Unit = {
-        scope.launch {
-            scrollState.animateScrollTo(520)
-        }
-    }
-
     // Title opacity based on scroll position (fade in as user scrolls)
     val titleAlpha by remember { derivedStateOf { (scrollState.value / 300f).coerceIn(0f, 1f) } }
 
@@ -167,7 +161,6 @@ fun App() {
                             HeroSection(
                                 selectedSeed = selectedSeed,
                                 onOpenHowItWorks = { showHowItWorks = true },
-                                onScrollToGrid = scrollToGrid,
                                 onIconClick = { iconPair ->
                                     heroSelectedIcon = iconPair
                                 }
@@ -311,6 +304,7 @@ private fun BottomToolbar(
             ) {
                 themeSeedOptions.forEachIndexed { index, seed ->
                     ColorDot(
+                        label = seed.name,
                         color = seed.color,
                         isSelected = index == selectedSeedIndex,
                         onClick = { onSeedSelected(index) }
@@ -381,6 +375,7 @@ private fun ToolbarButton(
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
+                role = Role.Button,
                 onClick = onClick
             ),
     ) {
@@ -408,6 +403,7 @@ private fun ToolbarButton(
 
 @Composable
 private fun ColorDot(
+    label: String,
     color: Color,
     isSelected: Boolean,
     onClick: () -> Unit,
@@ -433,33 +429,45 @@ private fun ColorDot(
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
-            .size(28.dp)
+            .size(44.dp)
             .graphicsLayer { scaleX = scale; scaleY = scale }
-            .clip(CircleShape)
-            .background(color)
-            .then(
-                if (isSelected) {
-                    Modifier.border(
-                        width = 2.5.dp,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
-                        shape = CircleShape
-                    )
-                } else Modifier
-            )
-            .pointerHoverIcon(PointerIcon.Hand)
+            .semantics {
+                contentDescription = "$label theme"
+                selected = isSelected
+            }
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
+                role = Role.RadioButton,
                 onClick = onClick
             )
+            .pointerHoverIcon(PointerIcon.Hand)
     ) {
-        if (isSelected) {
-            Icon(
-                imageVector = Icons.Filled.Check,
-                contentDescription = null,
-                modifier = Modifier.size(14.dp),
-                tint = if (color.luminance() > 0.5f) Color.Black else Color.White
-            )
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .size(28.dp)
+                .graphicsLayer { scaleX = scale; scaleY = scale }
+                .clip(CircleShape)
+                .background(color)
+                .then(
+                    if (isSelected) {
+                        Modifier.border(
+                            width = 2.5.dp,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
+                            shape = CircleShape
+                        )
+                    } else Modifier
+                )
+        ) {
+            if (isSelected) {
+                Icon(
+                    imageVector = Icons.Filled.Check,
+                    contentDescription = null,
+                    modifier = Modifier.size(14.dp),
+                    tint = if (color.luminance() > 0.5f) Color.Black else Color.White
+                )
+            }
         }
     }
 }
@@ -512,8 +520,7 @@ private fun AnimatedMeshBackground(seedColor: Color, isDark: Boolean) {
 }
 
 // Custom GitHub icon
-private val GitHubIcon: ImageVector
-    get() = ImageVector.Builder(
+private val GitHubIcon: ImageVector = ImageVector.Builder(
         name = "GitHub",
         defaultWidth = 24.dp,
         defaultHeight = 24.dp,

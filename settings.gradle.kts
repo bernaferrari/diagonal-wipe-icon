@@ -1,4 +1,4 @@
-rootProject.name = "VPN"
+rootProject.name = "DiagonalWipeIcon"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {
