@@ -20,12 +20,14 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.ClipOp
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.clipPath
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.graphics.painter.Painter
@@ -314,13 +316,31 @@ internal fun DiagonalWipeIconAtProgress(
             )
 
             clipPath(path = revealPath, clipOp = ClipOp.Difference) {
+                val basePlacement = fitPainterInBounds(
+                    painter = basePainter,
+                    boundsSize = size,
+                )
                 with(basePainter) {
-                    draw(size = size, colorFilter = baseColorFilter)
+                    translate(
+                        left = basePlacement.topLeft.x,
+                        top = basePlacement.topLeft.y,
+                    ) {
+                        draw(size = basePlacement.drawSize, colorFilter = baseColorFilter)
+                    }
                 }
             }
             clipPath(path = revealPath, clipOp = ClipOp.Intersect) {
+                val wipedPlacement = fitPainterInBounds(
+                    painter = wipedPainter,
+                    boundsSize = size,
+                )
                 with(wipedPainter) {
-                    draw(size = size, colorFilter = wipedColorFilter)
+                    translate(
+                        left = wipedPlacement.topLeft.x,
+                        top = wipedPlacement.topLeft.y,
+                    ) {
+                        draw(size = wipedPlacement.drawSize, colorFilter = wipedColorFilter)
+                    }
                 }
             }
         }
@@ -494,6 +514,39 @@ private fun wipeBoundaryThreshold(
     val minValue = minOf(p0, p1, p2, p3)
     val maxValue = maxOf(p0, p1, p2, p3)
     return minValue + (maxValue - minValue) * progress.coerceIn(0f, 1f)
+}
+
+private data class PainterPlacement(
+    val topLeft: Offset,
+    val drawSize: Size,
+)
+
+private fun fitPainterInBounds(
+    painter: Painter,
+    boundsSize: Size,
+): PainterPlacement {
+    val intrinsic = painter.intrinsicSize
+    val hasValidIntrinsicSize = intrinsic.width.isFinite() &&
+            intrinsic.height.isFinite() &&
+            intrinsic.width > 0f &&
+            intrinsic.height > 0f
+    if (!hasValidIntrinsicSize) {
+        return PainterPlacement(topLeft = Offset.Zero, drawSize = boundsSize)
+    }
+
+    val scale = minOf(
+        boundsSize.width / intrinsic.width,
+        boundsSize.height / intrinsic.height,
+    )
+    val drawWidth = intrinsic.width * scale
+    val drawHeight = intrinsic.height * scale
+    val left = (boundsSize.width - drawWidth) * 0.5f
+    val top = (boundsSize.height - drawHeight) * 0.5f
+
+    return PainterPlacement(
+        topLeft = Offset(left, top),
+        drawSize = Size(drawWidth, drawHeight),
+    )
 }
 
 internal class WipePathScratch {

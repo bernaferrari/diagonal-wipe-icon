@@ -10,7 +10,7 @@
 
 <img src="assets/screenshots/01-before-after.png" width="680" alt="Diagonal wipe icon animation showing smooth transition between on/off states">
 
-**[🚀 Live Demo](https://bernaferrari.github.io/diagonal-wipe-icon/)** • **[📄 Copy Single File](composeApp/src/commonMain/kotlin/com/bernaferrari/DiagonalWipeIcon.kt)** • **[🎨 Try Locally](#run-the-demo)**
+**[🚀 Live Demo](https://bernaferrari.github.io/diagonal-wipe-icon/)** • **[📄 Copy Single File](composeApp/src/commonMain/kotlin/com/bernaferrari/diagonalwipeicon/DiagonalWipeIcon.kt)** • **[🎨 Try Locally](#run-the-demo)**
 
 </div>
 
@@ -18,7 +18,7 @@
 
 ## What Is This?
 
-`DiagonalWipeIcon` is a **single Kotlin file** (~500 lines) that adds cinematic icon transitions to your Compose UI. Instead of jarring instant swaps, icons wipe between states with a smooth diagonal or directional mask.
+`DiagonalWipeIcon` is a **single Kotlin file** (~600 lines) that adds cinematic icon transitions to your Compose UI. Instead of jarring instant swaps, icons wipe between states with a smooth diagonal or directional mask.
 
 Perfect for:
 - Toggle controls (`on/off`, `enabled/disabled`, `visible/hidden`)
@@ -34,9 +34,9 @@ Perfect for:
 | Feature | Benefit |
 |---------|---------|
 | 🎬 **Cinematic transitions** | Visual continuity between icon states |
-| 📱 **Works everywhere** | Android, iOS, Desktop, Web (Wasm) |
+| 📱 **Multiplatform-ready** | Android, iOS, and Web (JS with Wasm compatibility distribution) |
 | 🎨 **Fully customizable** | 8 directions, springs, tweens, custom easing |
-| 📦 **Zero bloat** | Single file, ~500 lines, no dependencies |
+| 📦 **Zero bloat** | Single file, ~600 lines, no dependencies |
 | 🏎️ **Performance-optimized** | Settled state = single icon draw |
 
 ---
@@ -46,7 +46,7 @@ Perfect for:
 Copy the file directly:
 
 ```bash
-curl -O https://raw.githubusercontent.com/bernaferrari/diagonal-wipe-icon/main/composeApp/src/commonMain/kotlin/com/bernaferrari/DiagonalWipeIcon.kt
+curl -O https://raw.githubusercontent.com/bernaferrari/diagonal-wipe-icon/main/composeApp/src/commonMain/kotlin/com/bernaferrari/diagonalwipeicon/DiagonalWipeIcon.kt
 ```
 
 Drop it in your `commonMain/kotlin` folder. Done.
@@ -221,11 +221,11 @@ A moving clip path reveals one icon while concealing the other:
 - [x] Supports custom vector assets
 - [x] No additional dependencies
 - [x] Respects `contentDescription` for accessibility
-- [ ] Consider `prefers-reduced-motion` for motion-sensitive users
+- [ ] Consider an in-app reduced-motion toggle for motion-sensitive users
 
 ---
 
-## 🌐 Live Demo
+## Run the Demo
 
 Try it in your browser:
 
@@ -234,14 +234,11 @@ Try it in your browser:
 Or run locally:
 
 ```bash
-# Desktop
-./gradlew :composeApp:run
-
-# Web (Wasm)
-./gradlew :composeApp:wasmJsBrowserRun
+# Web (dev server)
+./gradlew :composeApp:jsBrowserDevelopmentRun
 
 # Android
-./gradlew :composeApp:installDebug
+./gradlew :androidApp:installDebug
 ```
 
 ---
@@ -261,7 +258,7 @@ A: Pass `contentDescription` and it just works. The component respects semantics
 A: Yes, but profile if you have high-density animated surfaces.
 
 **Q: Is this production-ready?**  
-A: Yes. The code is straightforward, tested, and uses only stable Compose APIs.
+A: Yes. The implementation is straightforward and includes common tests for motion/config behavior; still profile in your app context.
 
 ---
 

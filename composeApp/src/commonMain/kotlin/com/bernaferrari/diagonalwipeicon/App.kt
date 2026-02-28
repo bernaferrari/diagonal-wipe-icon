@@ -1,6 +1,7 @@
 package com.bernaferrari.diagonalwipeicon
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -9,10 +10,12 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -133,12 +136,12 @@ fun App() {
 
             Scaffold(
                 topBar = {
-                AnimatedTopBar(
-                    titleAlpha = titleAlpha,
-                    isDark = isDark,
-                    onToggleDark = { isDark = !isDark },
-                    onOpenGitHub = { uriHandler.openUri("https://github.com/bernaferrari") }
-                )
+                    AnimatedTopBar(
+                        titleAlpha = titleAlpha,
+                        isDark = isDark,
+                        onToggleDark = { isDark = !isDark },
+                        onOpenGitHub = { uriHandler.openUri("https://github.com/bernaferrari") }
+                    )
                 },
                 containerColor = Color.Transparent
             ) { paddingValues ->
@@ -179,7 +182,7 @@ fun App() {
                         )
 
                         // Space for bottom toolbar
-                        Spacer(modifier = Modifier.height(100.dp))
+                        Spacer(modifier = Modifier.height(88.dp))
                     }
 
                     // Floating bottom toolbar
@@ -195,7 +198,8 @@ fun App() {
                             onSeedSelected = { selectedSeedIndex = it },
                             isSlowMode = isSlowMode,
                             onToggleSlowMode = {
-                                globalAnimationMultiplier = if (isSlowMode) 1f else SlowAnimationMultiplier
+                                globalAnimationMultiplier =
+                                    if (isSlowMode) 1f else SlowAnimationMultiplier
                             },
                             isLooping = isLooping,
                             onToggleLoop = {
@@ -274,6 +278,7 @@ private fun AnimatedTopBar(
     )
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun BottomToolbar(
     themeSeedOptions: List<ThemeSeed>,
@@ -284,22 +289,26 @@ private fun BottomToolbar(
     isLooping: Boolean,
     onToggleLoop: () -> Unit,
 ) {
-    Surface(
+    HorizontalFloatingToolbar(
+        expanded = true,
+        modifier = Modifier
+            .padding(bottom = 16.dp),
+        colors = FloatingToolbarDefaults.standardFloatingToolbarColors(
+            toolbarContainerColor = MaterialTheme.colorScheme.surface,
+            toolbarContentColor = MaterialTheme.colorScheme.onSurface,
+        ),
         shape = RoundedCornerShape(20.dp),
-        shadowElevation = 4.dp,
-        tonalElevation = 1.dp,
-        color = MaterialTheme.colorScheme.surface,
-        modifier = Modifier.padding(bottom = 24.dp)
+        expandedShadowElevation = 4.dp,
+        collapsedShadowElevation = 1.dp,
     ) {
         Row(
-            modifier = Modifier
-                .padding(horizontal = 20.dp, vertical = 16.dp),
+            modifier = Modifier.horizontalScroll(rememberScrollState()),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(20.dp)
+            horizontalArrangement = Arrangement.spacedBy(0.dp)
         ) {
             // Theme colors
             Row(
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                horizontalArrangement = Arrangement.spacedBy(0.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 themeSeedOptions.forEachIndexed { index, seed ->
@@ -312,6 +321,8 @@ private fun BottomToolbar(
                 }
             }
 
+            Spacer(modifier = Modifier.width(8.dp))
+
             // Divider
             Box(
                 modifier = Modifier
@@ -320,153 +331,67 @@ private fun BottomToolbar(
                     .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
             )
 
+            Spacer(modifier = Modifier.width(8.dp))
+
             // Controls
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                ToolbarButton(
-                    selected = isSlowMode,
+                TextButton(
                     onClick = onToggleSlowMode,
-                    icon = Icons.Outlined.Speed,
-                    label = if (isSlowMode) "0.5x" else "1x"
-                )
+                    modifier = Modifier.pointerHoverIcon(PointerIcon.Hand),
+                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 8.dp),
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = if (isSlowMode) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        }
+                    ),
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Speed,
+                        contentDescription = null,
+                        modifier = Modifier.size(17.dp),
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = if (isSlowMode) "0.5x" else "1x",
+                        style = MaterialTheme.typography.labelMedium.copy(
+                            fontWeight = if (isSlowMode) FontWeight.SemiBold else FontWeight.Medium
+                        ),
+                    )
+                }
 
-                ToolbarButton(
-                    selected = isLooping,
+                FilledTonalButton(
                     onClick = onToggleLoop,
-                    icon = if (isLooping) Icons.Filled.Stop else Icons.Filled.PlayArrow,
-                    label = if (isLooping) "Stop" else "Loop"
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun ToolbarButton(
-    selected: Boolean,
-    onClick: () -> Unit,
-    icon: ImageVector,
-    label: String,
-) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isHovered by interactionSource.collectIsHoveredAsState()
-    val isPressed by interactionSource.collectIsPressedAsState()
-
-    val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.95f else 1f,
-        animationSpec = spring(stiffness = Spring.StiffnessMedium),
-        label = "buttonScale"
-    )
-
-    val containerColor = when {
-        selected -> MaterialTheme.colorScheme.primaryContainer
-        isHovered -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f)
-        else -> Color.Transparent
-    }
-
-    Surface(
-        shape = RoundedCornerShape(12.dp),
-        color = containerColor,
-        modifier = Modifier
-            .graphicsLayer { scaleX = scale; scaleY = scale }
-            .pointerHoverIcon(PointerIcon.Hand)
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                role = Role.Button,
-                onClick = onClick
-            ),
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                modifier = Modifier.size(18.dp),
-                tint = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelMedium.copy(
-                    fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium
-                ),
-                color = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
-}
-
-@Composable
-private fun ColorDot(
-    label: String,
-    color: Color,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isHovered by interactionSource.collectIsHoveredAsState()
-    val isPressed by interactionSource.collectIsPressedAsState()
-
-    val scale by animateFloatAsState(
-        targetValue = when {
-            isPressed -> 0.9f
-            isSelected -> 1.12f
-            isHovered -> 1.06f
-            else -> 1f
-        },
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessMedium
-        ),
-        label = "colorDotScale"
-    )
-
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier
-            .size(44.dp)
-            .graphicsLayer { scaleX = scale; scaleY = scale }
-            .semantics {
-                contentDescription = "$label theme"
-                selected = isSelected
-            }
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                role = Role.RadioButton,
-                onClick = onClick
-            )
-            .pointerHoverIcon(PointerIcon.Hand)
-    ) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .size(28.dp)
-                .graphicsLayer { scaleX = scale; scaleY = scale }
-                .clip(CircleShape)
-                .background(color)
-                .then(
-                    if (isSelected) {
-                        Modifier.border(
-                            width = 2.5.dp,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
-                            shape = CircleShape
-                        )
-                    } else Modifier
-                )
-        ) {
-            if (isSelected) {
-                Icon(
-                    imageVector = Icons.Filled.Check,
-                    contentDescription = null,
-                    modifier = Modifier.size(14.dp),
-                    tint = if (color.luminance() > 0.5f) Color.Black else Color.White
-                )
+                    modifier = Modifier.pointerHoverIcon(PointerIcon.Hand),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                    colors = ButtonDefaults.filledTonalButtonColors(
+                        containerColor = if (isLooping) {
+                            MaterialTheme.colorScheme.primaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.78f)
+                        },
+                        contentColor = if (isLooping) {
+                            MaterialTheme.colorScheme.onPrimaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.onSecondaryContainer
+                        },
+                    ),
+                ) {
+                    Icon(
+                        imageVector = if (isLooping) Icons.Filled.Stop else Icons.Filled.PlayArrow,
+                        contentDescription = null,
+                        modifier = Modifier.size(17.dp),
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = if (isLooping) "Stop" else "Loop",
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                    )
+                }
             }
         }
     }
@@ -521,47 +446,39 @@ private fun AnimatedMeshBackground(seedColor: Color, isDark: Boolean) {
 
 // Custom GitHub icon
 private val GitHubIcon: ImageVector = ImageVector.Builder(
-        name = "GitHub",
-        defaultWidth = 24.dp,
-        defaultHeight = 24.dp,
-        viewportWidth = 24f,
-        viewportHeight = 24f
-    ).apply {
-        path(fill = SolidColor(Color(0xFF000000))) {
-            moveTo(12f, 0f)
-            curveTo(5.374f, 0f, 0f, 5.373f, 0f, 12f)
-            curveTo(0f, 17.302f, 3.438f, 21.8f, 8.207f, 23.387f)
-            curveTo(8.806f, 23.498f, 9f, 23.126f, 9f, 22.81f)
-            verticalLineTo(20.576f)
-            curveTo(5.662f, 21.302f, 4.967f, 19.16f, 4.967f, 19.16f)
-            curveTo(4.421f, 17.773f, 3.634f, 17.404f, 3.634f, 17.404f)
-            curveTo(2.545f, 16.659f, 3.717f, 16.675f, 3.717f, 16.675f)
-            curveTo(4.922f, 16.759f, 5.556f, 17.912f, 5.556f, 17.912f)
-            curveTo(6.626f, 19.746f, 8.363f, 19.216f, 9.048f, 18.909f)
-            curveTo(9.155f, 18.134f, 9.466f, 17.604f, 9.81f, 17.305f)
-            curveTo(7.145f, 17f, 4.343f, 15.971f, 4.343f, 11.374f)
-            curveTo(4.343f, 10.063f, 4.812f, 8.993f, 5.579f, 8.153f)
-            curveTo(5.455f, 7.85f, 5.044f, 6.629f, 5.696f, 4.977f)
-            curveTo(5.696f, 4.977f, 6.704f, 4.655f, 8.997f, 6.207f)
-            curveTo(9.954f, 5.941f, 10.98f, 5.808f, 12f, 5.803f)
-            curveTo(13.02f, 5.808f, 14.047f, 5.941f, 15.006f, 6.207f)
-            curveTo(17.297f, 4.655f, 18.303f, 4.977f, 18.303f, 4.977f)
-            curveTo(18.956f, 6.63f, 18.545f, 7.851f, 18.421f, 8.153f)
-            curveTo(19.191f, 8.993f, 19.656f, 10.063f, 19.656f, 11.374f)
-            curveTo(19.656f, 15.983f, 16.849f, 16.998f, 14.177f, 17.295f)
-            curveTo(14.607f, 17.667f, 15f, 18.397f, 15f, 19.517f)
-            verticalLineTo(22.81f)
-            curveTo(15f, 23.129f, 15.192f, 23.504f, 15.801f, 23.386f)
-            curveTo(20.566f, 21.797f, 24f, 17.3f, 24f, 12f)
-            curveTo(24f, 5.373f, 18.627f, 0f, 12f, 0f)
-            close()
-        }
-    }.build()
-
-// Import necessary extensions
-private fun Color.luminance(): Float {
-    val r = red
-    val g = green
-    val b = blue
-    return 0.2126f * r + 0.7152f * g + 0.0722f * b
-}
+    name = "GitHub",
+    defaultWidth = 24.dp,
+    defaultHeight = 24.dp,
+    viewportWidth = 24f,
+    viewportHeight = 24f
+).apply {
+    path(fill = SolidColor(Color(0xFF000000))) {
+        moveTo(12f, 0f)
+        curveTo(5.374f, 0f, 0f, 5.373f, 0f, 12f)
+        curveTo(0f, 17.302f, 3.438f, 21.8f, 8.207f, 23.387f)
+        curveTo(8.806f, 23.498f, 9f, 23.126f, 9f, 22.81f)
+        verticalLineTo(20.576f)
+        curveTo(5.662f, 21.302f, 4.967f, 19.16f, 4.967f, 19.16f)
+        curveTo(4.421f, 17.773f, 3.634f, 17.404f, 3.634f, 17.404f)
+        curveTo(2.545f, 16.659f, 3.717f, 16.675f, 3.717f, 16.675f)
+        curveTo(4.922f, 16.759f, 5.556f, 17.912f, 5.556f, 17.912f)
+        curveTo(6.626f, 19.746f, 8.363f, 19.216f, 9.048f, 18.909f)
+        curveTo(9.155f, 18.134f, 9.466f, 17.604f, 9.81f, 17.305f)
+        curveTo(7.145f, 17f, 4.343f, 15.971f, 4.343f, 11.374f)
+        curveTo(4.343f, 10.063f, 4.812f, 8.993f, 5.579f, 8.153f)
+        curveTo(5.455f, 7.85f, 5.044f, 6.629f, 5.696f, 4.977f)
+        curveTo(5.696f, 4.977f, 6.704f, 4.655f, 8.997f, 6.207f)
+        curveTo(9.954f, 5.941f, 10.98f, 5.808f, 12f, 5.803f)
+        curveTo(13.02f, 5.808f, 14.047f, 5.941f, 15.006f, 6.207f)
+        curveTo(17.297f, 4.655f, 18.303f, 4.977f, 18.303f, 4.977f)
+        curveTo(18.956f, 6.63f, 18.545f, 7.851f, 18.421f, 8.153f)
+        curveTo(19.191f, 8.993f, 19.656f, 10.063f, 19.656f, 11.374f)
+        curveTo(19.656f, 15.983f, 16.849f, 16.998f, 14.177f, 17.295f)
+        curveTo(14.607f, 17.667f, 15f, 18.397f, 15f, 19.517f)
+        verticalLineTo(22.81f)
+        curveTo(15f, 23.129f, 15.192f, 23.504f, 15.801f, 23.386f)
+        curveTo(20.566f, 21.797f, 24f, 17.3f, 24f, 12f)
+        curveTo(24f, 5.373f, 18.627f, 0f, 12f, 0f)
+        close()
+    }
+}.build()

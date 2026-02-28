@@ -396,7 +396,7 @@ internal fun HowItWorksDialog(
                     animationMultiplier = SlowAnimationMultiplier,
                 )
                 Text(
-                    text = "Use two standard Material icons and one animated mask. It is much faster than building and maintaining custom vector paths by hand.",
+                    text = "Use two icons and one animated mask. It is much easier and faster than building and maintaining custom vector paths by hand.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
