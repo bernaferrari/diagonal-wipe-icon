@@ -135,10 +135,11 @@ fun App() {
                     )
                 },
                 containerColor = Color.Transparent
-            ) { _ ->
+            ) { paddingValues ->
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
+                        .padding(top = paddingValues.calculateTopPadding())
                 ) {
                     DiagonalWipeIconGridDemo(
                         animationMultiplier = globalAnimationMultiplier,

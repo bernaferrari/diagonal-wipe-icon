@@ -77,6 +77,8 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import androidx.compose.runtime.setValue
 
 data class MaterialWipeIconPair(
@@ -145,7 +147,10 @@ fun DiagonalWipeIconGridDemo(
             } else {
                 (gridState.firstVisibleItemScrollOffset / 300f).coerceIn(0f, 1f)
             }
-        }.collect { progress ->
+        }
+            .map { progress -> (progress * 60f).toInt() / 60f }
+            .distinctUntilChanged()
+            .collect { progress ->
             onScrollProgressChanged(progress)
         }
     }
@@ -166,7 +171,7 @@ fun DiagonalWipeIconGridDemo(
             contentPadding = PaddingValues(
                 start = horizontalPadding,
                 end = horizontalPadding,
-                top = 16.dp,
+                top = 0.dp,
                 bottom = 0.dp,
             ),
             horizontalArrangement = Arrangement.Center,
@@ -184,12 +189,15 @@ fun DiagonalWipeIconGridDemo(
                 }
             }
 
-            iconSections.forEach { section ->
+            iconSections.forEachIndexed { sectionIndex, section ->
                 item(
                     key = "header-${section.title}",
                     span = { GridItemSpan(maxLineSpan) },
                 ) {
-                    MaterialWipeIconSectionHeaderV2(section)
+                    MaterialWipeIconSectionHeaderV2(
+                        section = section,
+                        topPadding = if (sectionIndex == 0) 0.dp else 16.dp,
+                    )
                 }
                 items(
                     items = section.icons,
@@ -1294,12 +1302,14 @@ private fun toIconSymbol(raw: String): String = raw
 
 @Composable
 internal fun MaterialWipeIconSectionHeaderV2(
-    section: MaterialWipeIconSection
+    section: MaterialWipeIconSection,
+    topPadding: Dp = 16.dp,
+    bottomPadding: Dp = 16.dp,
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 16.dp),
+            .padding(top = topPadding, bottom = bottomPadding),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(

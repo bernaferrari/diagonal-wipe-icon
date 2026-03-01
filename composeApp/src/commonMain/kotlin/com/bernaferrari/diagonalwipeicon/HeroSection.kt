@@ -114,16 +114,33 @@ private fun HeroIconShowcase(
         )
     }
 
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(20.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        iconPairs.forEachIndexed { index, iconPair ->
-            HeroAnimatedIcon(
-                iconPair = iconPair,
-                delayMillis = index * 200,
-                onClick = { onIconClick(iconPair) }
-            )
+    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+        val itemSize = 90.dp
+        val itemSpacing = 20.dp
+        val maxVisibleIcons = ((maxWidth + itemSpacing) / (itemSize + itemSpacing))
+            .toInt()
+            .coerceAtLeast(1)
+            .coerceAtMost(iconPairs.size)
+        val startIndex = ((iconPairs.size - maxVisibleIcons) / 2).coerceAtLeast(0)
+        val visibleIcons = iconPairs.subList(startIndex, startIndex + maxVisibleIcons)
+
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.Center
+        ) {
+            Row(
+                modifier = Modifier,
+                horizontalArrangement = Arrangement.spacedBy(20.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                visibleIcons.forEachIndexed { index, iconPair ->
+                    HeroAnimatedIcon(
+                        iconPair = iconPair,
+                        delayMillis = (startIndex + index) * 200,
+                        onClick = { onIconClick(iconPair) }
+                    )
+                }
+            }
         }
     }
 }
