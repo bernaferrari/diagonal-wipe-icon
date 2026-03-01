@@ -9,7 +9,9 @@ import androidx.compose.animation.core.tween
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNotNull
 import kotlin.test.assertSame
+import kotlin.test.assertTrue
 
 class ComposeAppCommonTest {
 
@@ -60,6 +62,43 @@ class ComposeAppCommonTest {
         assertFailsWith<IllegalArgumentException> {
             DiagonalWipeIconDefaults.tween(wipeOutDurationMillis = -1)
         }
+    }
+
+    @Test
+    fun wipeTravelDistance_matchesExpectedCardinalAndDiagonalRanges() {
+        val width = 120f
+        val height = 80f
+
+        assertEquals(width, wipeTravelDistance(width, height, WipeDirection.LeftToRight))
+        assertEquals(height, wipeTravelDistance(width, height, WipeDirection.TopToBottom))
+        assertEquals(width + height, wipeTravelDistance(width, height, WipeDirection.TopLeftToBottomRight))
+    }
+
+    @Test
+    fun buildWipeBoundaryLine_returnsNullAtExtremes_andLineInsideBoundsMidway() {
+        val width = 100f
+        val height = 60f
+
+        assertEquals(
+            null,
+            buildWipeBoundaryLine(width, height, progress = 0f, direction = WipeDirection.LeftToRight),
+        )
+        assertEquals(
+            null,
+            buildWipeBoundaryLine(width, height, progress = 1f, direction = WipeDirection.LeftToRight),
+        )
+
+        val middle = buildWipeBoundaryLine(
+            width = width,
+            height = height,
+            progress = 0.5f,
+            direction = WipeDirection.LeftToRight,
+        )
+        assertNotNull(middle)
+        assertTrue(middle.first.x in 0f..width)
+        assertTrue(middle.second.x in 0f..width)
+        assertTrue(middle.first.y in 0f..height)
+        assertTrue(middle.second.y in 0f..height)
     }
 }
 

@@ -1,4 +1,6 @@
-package com.bernaferrari.diagonalwipeicon
+package com.bernaferrari.diagonalwipeicon.demo
+
+import com.bernaferrari.diagonalwipeicon.DrawableWipeIcon
 
 import diagonalwipeicon.composeapp.generated.resources.Res
 import diagonalwipeicon.composeapp.generated.resources.*

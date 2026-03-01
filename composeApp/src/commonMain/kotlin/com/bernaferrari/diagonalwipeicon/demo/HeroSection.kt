@@ -1,4 +1,7 @@
-package com.bernaferrari.diagonalwipeicon
+package com.bernaferrari.diagonalwipeicon.demo
+
+import com.bernaferrari.diagonalwipeicon.DiagonalWipeIcon
+import com.bernaferrari.diagonalwipeicon.DiagonalWipeIconDefaults
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
@@ -36,7 +39,7 @@ import kotlin.math.sin
  * Hero section with large animated showcase and Material Design colors.
  */
 @Composable
-fun HeroSection(
+internal fun HeroSection(
     modifier: Modifier = Modifier,
     selectedSeed: ThemeSeed,
     onOpenHowItWorks: () -> Unit,
@@ -115,8 +118,8 @@ private fun HeroIconShowcase(
     }
 
     BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
-        val itemSize = 90.dp
-        val itemSpacing = 20.dp
+        val itemSize = UiTokens.HeroIconSize
+        val itemSpacing = UiTokens.HeroIconSpacing
         val maxVisibleIcons = ((maxWidth + itemSpacing) / (itemSize + itemSpacing))
             .toInt()
             .coerceAtLeast(1)
@@ -130,7 +133,7 @@ private fun HeroIconShowcase(
         ) {
             Row(
                 modifier = Modifier,
-                horizontalArrangement = Arrangement.spacedBy(20.dp),
+                horizontalArrangement = Arrangement.spacedBy(UiTokens.HeroIconSpacing),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 visibleIcons.forEachIndexed { index, iconPair ->
@@ -188,7 +191,7 @@ private fun HeroAnimatedIcon(
 
     Box(
         modifier = Modifier
-            .size(90.dp)
+            .size(UiTokens.HeroIconSize)
             .scale(scale)
             .clip(RoundedCornerShape(22.dp))
             .background(bgColor)

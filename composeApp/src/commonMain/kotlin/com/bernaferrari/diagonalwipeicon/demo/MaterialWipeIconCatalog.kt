@@ -1,4 +1,4 @@
-package com.bernaferrari.diagonalwipeicon
+package com.bernaferrari.diagonalwipeicon.demo
 
 internal val coreMaterialWipeIconCatalog = listOf(
     MaterialWipeIconPair("Account Circle", MaterialSymbolIcons.AccountCircle, MaterialSymbolIcons.AccountCircleOff),
@@ -163,13 +163,6 @@ internal val coreMaterialWipeIconCatalog = listOf(
     MaterialWipeIconPair("Mail", MaterialSymbolIcons.Mail, MaterialSymbolIcons.MailOff),
     MaterialWipeIconPair("Match Case", MaterialSymbolIcons.MatchCase, MaterialSymbolIcons.MatchCaseOff),
     MaterialWipeIconPair("Media Output", MaterialSymbolIcons.MediaOutput, MaterialSymbolIcons.MediaOutputOff),
-    MaterialWipeIconPair(
-        "Media Bluetooth",
-        MaterialSymbolIcons.MediaBluetoothOn,
-        MaterialSymbolIcons.MediaBluetoothOff,
-        enabledCodeIconName = "MediaBluetoothOn",
-        disabledCodeIconName = "MediaBluetoothOff",
-    ),
     MaterialWipeIconPair("Mic", MaterialSymbolIcons.Mic, MaterialSymbolIcons.MicOff),
     MaterialWipeIconPair(
         "Mic External",
@@ -260,7 +253,6 @@ internal val coreMaterialWipeIconCatalog = listOf(
     MaterialWipeIconPair("Notifications", MaterialSymbolIcons.Notifications, MaterialSymbolIcons.NotificationsOff),
     MaterialWipeIconPair("Offline Pin", MaterialSymbolIcons.OfflinePin, MaterialSymbolIcons.OfflinePinOff),
     MaterialWipeIconPair("Open In New", MaterialSymbolIcons.OpenInNew, MaterialSymbolIcons.OpenInNewOff),
-    MaterialWipeIconPair("Password 2", MaterialSymbolIcons.Password2, MaterialSymbolIcons.Password2Off),
     MaterialWipeIconPair("Person", MaterialSymbolIcons.Person, MaterialSymbolIcons.PersonOff),
     MaterialWipeIconPair("Person Add", MaterialSymbolIcons.PersonAdd, MaterialSymbolIcons.PersonAddDisabled),
     MaterialWipeIconPair("Personal Bag", MaterialSymbolIcons.PersonalBag, MaterialSymbolIcons.PersonalBagOff),
@@ -381,6 +373,14 @@ internal val knownProblemsMaterialWipeIconCatalog = listOf(
         enabledCodeIconName = "SmartCardReader",
         disabledCodeIconName = "SmartCardReaderOff",
     ),
+    MaterialWipeIconPair(
+        "Media Bluetooth",
+        MaterialSymbolIcons.MediaBluetoothOn,
+        MaterialSymbolIcons.MediaBluetoothOff,
+        enabledCodeIconName = "MediaBluetoothOn",
+        disabledCodeIconName = "MediaBluetoothOff",
+    ),
+    MaterialWipeIconPair("Password 2", MaterialSymbolIcons.Password2, MaterialSymbolIcons.Password2Off),
     MaterialWipeIconPair("Wifi Tethering", MaterialSymbolIcons.WifiTethering, MaterialSymbolIcons.WifiTetheringOff),
 )
 

@@ -1,4 +1,4 @@
-package com.bernaferrari.diagonalwipeicon
+package com.bernaferrari.diagonalwipeicon.demo
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -35,7 +35,7 @@ import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 
 @Composable
-internal fun ColorDot(
+internal fun ThemeColorSwatch(
     label: String,
     color: Color,
     isSelected: Boolean,
