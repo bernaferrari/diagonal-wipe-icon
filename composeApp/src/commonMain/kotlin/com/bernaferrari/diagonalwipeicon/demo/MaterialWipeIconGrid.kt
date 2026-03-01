@@ -131,7 +131,7 @@ fun DiagonalWipeIconGridDemo(
         LazyColumn(
             state = listState,
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(0.dp),
+            contentPadding = PaddingValues(bottom = 48.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             if (headerContent != null) {

@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -44,9 +43,7 @@ internal fun BottomToolbar(
 ) {
     HorizontalFloatingToolbar(
         expanded = true,
-        modifier = Modifier
-            .padding(bottom = 16.dp)
-            .heightIn(max = 72.dp),
+        modifier = Modifier.padding(bottom = 16.dp),
         colors = FloatingToolbarDefaults.standardFloatingToolbarColors(
             toolbarContainerColor = MaterialTheme.colorScheme.surface,
             toolbarContentColor = MaterialTheme.colorScheme.onSurface,
@@ -54,15 +51,11 @@ internal fun BottomToolbar(
         shape = RoundedCornerShape(20.dp),
         expandedShadowElevation = 4.dp,
         collapsedShadowElevation = 1.dp,
-    ) {
-        Row(
-            modifier = Modifier.horizontalScroll(rememberScrollState()),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(0.dp)
-        ) {
+        leadingContent = {
             Row(
-                horizontalArrangement = Arrangement.spacedBy(0.dp),
-                verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier.horizontalScroll(rememberScrollState()),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(0.dp)
             ) {
                 themeSeedOptions.forEachIndexed { index, seed ->
                     ThemeColorSwatch(
@@ -72,81 +65,82 @@ internal fun BottomToolbar(
                         onClick = { onSeedSelected(index) }
                     )
                 }
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Box(
+                    modifier = Modifier
+                        .height(24.dp)
+                        .width(1.dp)
+                        .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
             }
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            Box(
-                modifier = Modifier
-                    .height(24.dp)
-                    .width(1.dp)
-                    .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-            )
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
+        },
+        trailingContent = {
+            FilledTonalButton(
+                onClick = onToggleLoop,
+                modifier = Modifier.pointerHoverIcon(PointerIcon.Hand),
+                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                colors = ButtonDefaults.filledTonalButtonColors(
+                    containerColor = if (isLooping) {
+                        MaterialTheme.colorScheme.primaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.78f)
+                    },
+                    contentColor = if (isLooping) {
+                        MaterialTheme.colorScheme.onPrimaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.onSecondaryContainer
+                    },
+                ),
             ) {
-                TextButton(
-                    onClick = onToggleSlowMode,
-                    modifier = Modifier.pointerHoverIcon(PointerIcon.Hand),
-                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 8.dp),
-                    colors = ButtonDefaults.textButtonColors(
-                        contentColor = if (isSlowMode) {
-                            MaterialTheme.colorScheme.primary
-                        } else {
-                            MaterialTheme.colorScheme.onSurfaceVariant
-                        }
+                Icon(
+                    painter = if (isLooping) {
+                        MaterialSymbolIcons.Stop.painter()
+                    } else {
+                        MaterialSymbolIcons.PlayArrow.painter()
+                    },
+                    contentDescription = null,
+                    modifier = Modifier.size(17.dp),
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = if (isLooping) "Stop" else "Loop",
+                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                )
+            }
+        },
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(0.dp)
+        ) {
+            TextButton(
+                onClick = onToggleSlowMode,
+                modifier = Modifier.pointerHoverIcon(PointerIcon.Hand),
+                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 8.dp),
+                colors = ButtonDefaults.textButtonColors(
+                    contentColor = if (isSlowMode) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    }
+                ),
+            ) {
+                Icon(
+                    painter = MaterialSymbolIcons.Speed.painter(),
+                    contentDescription = null,
+                    modifier = Modifier.size(17.dp),
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = if (isSlowMode) "0.5x" else "1x",
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        fontWeight = if (isSlowMode) FontWeight.SemiBold else FontWeight.Medium
                     ),
-                ) {
-                    Icon(
-                        painter = MaterialSymbolIcons.Speed.painter(),
-                        contentDescription = null,
-                        modifier = Modifier.size(17.dp),
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = if (isSlowMode) "0.5x" else "1x",
-                        style = MaterialTheme.typography.labelMedium.copy(
-                            fontWeight = if (isSlowMode) FontWeight.SemiBold else FontWeight.Medium
-                        ),
-                    )
-                }
-
-                FilledTonalButton(
-                    onClick = onToggleLoop,
-                    modifier = Modifier.pointerHoverIcon(PointerIcon.Hand),
-                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
-                    colors = ButtonDefaults.filledTonalButtonColors(
-                        containerColor = if (isLooping) {
-                            MaterialTheme.colorScheme.primaryContainer
-                        } else {
-                            MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.78f)
-                        },
-                        contentColor = if (isLooping) {
-                            MaterialTheme.colorScheme.onPrimaryContainer
-                        } else {
-                            MaterialTheme.colorScheme.onSecondaryContainer
-                        },
-                    ),
-                ) {
-                    Icon(
-                        painter = if (isLooping) {
-                            MaterialSymbolIcons.Stop.painter()
-                        } else {
-                            MaterialSymbolIcons.PlayArrow.painter()
-                        },
-                        contentDescription = null,
-                        modifier = Modifier.size(17.dp),
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = if (isLooping) "Stop" else "Loop",
-                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-                    )
-                }
+                )
             }
         }
     }

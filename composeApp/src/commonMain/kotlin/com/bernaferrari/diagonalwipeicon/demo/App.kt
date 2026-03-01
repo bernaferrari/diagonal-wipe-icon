@@ -97,7 +97,7 @@ fun App() {
                         titleAlpha = titleAlpha,
                         isDark = isDark,
                         onToggleDark = { isDark = !isDark },
-                        onOpenGitHub = { uriHandler.openUri("https://github.com/bernaferrari") },
+                        onOpenGitHub = { uriHandler.openUri("https://github.com/bernaferrari/diagonal-wipe-icon") },
                     )
                 },
                 containerColor = Color.Transparent
