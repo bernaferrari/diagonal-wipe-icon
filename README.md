@@ -1,16 +1,15 @@
 <div align="center">
 
+[<img src="assets/animated-icons.webp" width="680" alt="Diagonal wipe icon animation showing smooth transition between on/off states">](https://bernaferrari.github.io/diagonal-wipe-icon/)
+
 # Diagonal Wipe Icon
 
 **One-file icon transition component for Compose Multiplatform**
 
-[![Kotlin](https://img.shields.io/badge/Kotlin-2.0-blue.svg?style=flat&logo=kotlin)](https://kotlinlang.org)
-[![Compose](https://img.shields.io/badge/Compose-1.6+-4285F4.svg?style=flat&logo=jetpackcompose)](https://developer.android.com/jetpack/compose)
-[![License](https://img.shields.io/badge/License-MIT-green.svg?style=flat)](LICENSE)
 
-<img src="assets/screenshots/01-before-after.png" width="680" alt="Diagonal wipe icon animation showing smooth transition between on/off states">
+[<img src="assets/preview.png" width="680" alt="Diagonal wipe icon animation showing smooth transition between on/off states">](https://bernaferrari.github.io/diagonal-wipe-icon/)
 
-**[🚀 Live Demo](https://bernaferrari.github.io/diagonal-wipe-icon/)** • **[📄 Copy Single File](composeApp/src/commonMain/kotlin/com/bernaferrari/diagonalwipeicon/DiagonalWipeIcon.kt)** • **[🎨 Try Locally](#run-the-demo)**
+**[🚀 Live Demo](https://bernaferrari.github.io/diagonal-wipe-icon/)**
 
 </div>
 
@@ -18,14 +17,14 @@
 
 ## What Is This?
 
-`DiagonalWipeIcon` is a **single Kotlin file** (~600 lines) that adds cinematic icon transitions to your Compose UI. Instead of jarring instant swaps, icons wipe between states with a smooth diagonal or directional mask.
+Apple's SF Symbols makes it easy to add wipe icon transitions to iOS apps. Compose lacks this functionality built-in into icons, and the expected behavior is too complicated (manually get two drawable icons, make an animated drawable, get the animation right by hand or using a third party editor, every time). Therefore, I made a component that emulates the same behavior using two icons and a mask. Easy for experimentation, easy for prototypes, also simple enough for production.
 
 Perfect for:
 - Toggle controls (`on/off`, `enabled/disabled`, `visible/hidden`)
 - Settings screens with stateful icons
 - Anywhere you want polished micro-interactions
 
-**Zero dependencies. Copy one file. Ship it.**
+**Zero dependencies. Copy a single file.**
 
 ---
 
@@ -215,16 +214,6 @@ A moving clip path reveals one icon while concealing the other:
 
 ---
 
-## 🎯 Production Checklist
-
-- [x] Works with Material icons out of the box
-- [x] Supports custom vector assets
-- [x] No additional dependencies
-- [x] Respects `contentDescription` for accessibility
-- [ ] Consider an in-app reduced-motion toggle for motion-sensitive users
-
----
-
 ## Run the Demo
 
 Try it in your browser:
@@ -255,10 +244,10 @@ A: Yes. Compose Multiplatform supports iOS, and this component works in `commonM
 A: Pass `contentDescription` and it just works. The component respects semantics.
 
 **Q: Can I animate multiple icons at once?**  
-A: Yes, but profile if you have high-density animated surfaces.
+A: Yes, but profile if you have high-density animated surfaces. On the demo, having hundreds of icons animating at once started being a problem, so a combination of LazyColumn and a few tricks mostly solved it.
 
 **Q: Is this production-ready?**  
-A: Yes. The implementation is straightforward and includes common tests for motion/config behavior; still profile in your app context.
+A: Yes. The implementation is straightforward and includes common tests for motion/config behavior; still, feel free to profile in your app context. If it is good enough and fast enough, great, if it is not you won't loose much time by trying it. This is a low-risk high-reward solution.
 
 ---
 
