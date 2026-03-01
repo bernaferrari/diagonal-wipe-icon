@@ -18,7 +18,6 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -77,7 +76,7 @@ fun App() {
     var showHowItWorks by remember { mutableStateOf(false) }
     var howItWorksDirection by remember { mutableStateOf(WipeDirection.TopLeftToBottomRight) }
     var heroSelectedIcon by remember { mutableStateOf<MaterialWipeIconPair?>(null) }
-    val scrollState = rememberScrollState()
+    var scrollProgress by remember { mutableFloatStateOf(0f) }
 
     LaunchedEffect(Unit) {
         delay(150)
@@ -109,8 +108,7 @@ fun App() {
     val uriHandler = LocalUriHandler.current
     val isSlowMode = globalAnimationMultiplier > 1f
 
-    // Title opacity based on scroll position (fade in as user scrolls)
-    val titleAlpha by remember { derivedStateOf { (scrollState.value / 300f).coerceIn(0f, 1f) } }
+    val titleAlpha = scrollProgress.coerceIn(0f, 1f)
 
     DynamicMaterialTheme(
         seedColor = selectedSeed.color,
@@ -137,46 +135,39 @@ fun App() {
                     )
                 },
                 containerColor = Color.Transparent
-            ) { paddingValues ->
+            ) { _ ->
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(paddingValues)
                 ) {
-                    Column(
+                    DiagonalWipeIconGridDemo(
+                        animationMultiplier = globalAnimationMultiplier,
+                        allIconsWiped = isGloballyWiped,
+                        isLooping = isLooping,
+                        accentColor = selectedSeed.color,
+                        externalSelectedIcon = heroSelectedIcon,
+                        onExternalSelectedIconConsumed = { heroSelectedIcon = null },
+                        headerContent = {
+                            AnimatedVisibility(
+                                visible = showIntro,
+                                enter = fadeIn(tween(500, easing = EaseOut)) +
+                                        slideInVertically(tween(500, easing = EaseOut)) { it / 4 }
+                            ) {
+                                HeroSection(
+                                    selectedSeed = selectedSeed,
+                                    onOpenHowItWorks = { showHowItWorks = true },
+                                    onIconClick = { iconPair ->
+                                        heroSelectedIcon = iconPair
+                                    }
+                                )
+                            }
+                        },
+                        onScrollProgressChanged = { progress ->
+                            scrollProgress = progress
+                        },
                         modifier = Modifier
                             .fillMaxSize()
-                            .verticalScroll(scrollState)
-                    ) {
-                        // Hero Section
-                        AnimatedVisibility(
-                            visible = showIntro,
-                            enter = fadeIn(tween(500, easing = EaseOut)) +
-                                    slideInVertically(tween(500, easing = EaseOut)) { it / 4 }
-                        ) {
-                            HeroSection(
-                                selectedSeed = selectedSeed,
-                                onOpenHowItWorks = { showHowItWorks = true },
-                                onIconClick = { iconPair ->
-                                    heroSelectedIcon = iconPair
-                                }
-                            )
-                        }
-
-                        // Main Content Grid
-                        DiagonalWipeIconGridDemo(
-                            animationMultiplier = globalAnimationMultiplier,
-                            allIconsWiped = isGloballyWiped,
-                            isLooping = isLooping,
-                            accentColor = selectedSeed.color,
-                            externalSelectedIcon = heroSelectedIcon,
-                            onExternalSelectedIconConsumed = { heroSelectedIcon = null },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-
-                        // Space for bottom toolbar
-                        Spacer(modifier = Modifier.height(88.dp))
-                    }
+                    )
 
                     // Floating bottom toolbar
                     AnimatedVisibility(

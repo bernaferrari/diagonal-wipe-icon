@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,6 +30,11 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 
@@ -45,12 +51,15 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.window.Dialog
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -63,8 +72,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.selected
@@ -108,47 +115,6 @@ private val howItWorksDirectionOptions = listOf(
 private val howItWorksDirectionLabels =
     howItWorksDirectionOptions.associate { it.direction to it.label }
 
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun SectionWithStaggeredGrid(
-    section: MaterialWipeIconSection,
-    animationMultiplier: Float,
-    allIconsWiped: Boolean,
-    isLooping: Boolean,
-    accentColor: Color,
-    onIconSelected: (MaterialWipeIconPair) -> Unit,
-) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
-    ) {
-        // Section header with dramatic typography
-        MaterialWipeIconSectionHeaderV2(section)
-
-        // Staggered grid using FlowRow - smaller gaps, larger items
-        FlowRow(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(0.dp, Alignment.CenterHorizontally),
-            verticalArrangement = Arrangement.spacedBy(0.dp),
-            maxItemsInEachRow = 6
-        ) {
-            section.icons.forEach { iconPair ->
-                DiagonalWipeIconGridItem(
-                    iconPair = iconPair,
-                    animationMultiplier = animationMultiplier,
-                    allIconsWiped = allIconsWiped,
-                    isLooping = isLooping,
-                    accentColor = accentColor,
-                    onOpen = { onIconSelected(iconPair) }
-                )
-            }
-        }
-    }
-}
-
-
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun DiagonalWipeIconGridDemo(
     modifier: Modifier = Modifier,
@@ -158,8 +124,11 @@ fun DiagonalWipeIconGridDemo(
     accentColor: Color = Color(0xFF007FFF),
     externalSelectedIcon: MaterialWipeIconPair? = null,
     onExternalSelectedIconConsumed: () -> Unit = {},
+    headerContent: (@Composable () -> Unit)? = null,
+    onScrollProgressChanged: (Float) -> Unit = {},
 ) {
     var selectedIcon by remember { mutableStateOf<MaterialWipeIconPair?>(null) }
+    val gridState = rememberLazyGridState()
 
     // Handle external icon selection from hero
     LaunchedEffect(externalSelectedIcon) {
@@ -169,21 +138,79 @@ fun DiagonalWipeIconGridDemo(
         }
     }
 
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 32.dp),
-        verticalArrangement = Arrangement.spacedBy(48.dp)
+    LaunchedEffect(gridState, onScrollProgressChanged) {
+        snapshotFlow {
+            if (gridState.firstVisibleItemIndex > 0) {
+                1f
+            } else {
+                (gridState.firstVisibleItemScrollOffset / 300f).coerceIn(0f, 1f)
+            }
+        }.collect { progress ->
+            onScrollProgressChanged(progress)
+        }
+    }
+
+    BoxWithConstraints(
+        modifier = modifier.fillMaxSize(),
     ) {
-        iconSections.forEach { section ->
-            SectionWithStaggeredGrid(
-                section = section,
-                animationMultiplier = animationMultiplier,
-                allIconsWiped = allIconsWiped,
-                isLooping = isLooping,
-                accentColor = accentColor,
-                onIconSelected = { selectedIcon = it }
-            )
+        val viewportWidth = maxWidth
+        val gridMaxWidth = 1000.dp
+        val horizontalPadding = ((viewportWidth - gridMaxWidth) / 2).coerceAtLeast(24.dp)
+
+        LazyVerticalGrid(
+            columns = GridCells.Adaptive(minSize = 136.dp),
+            state = gridState,
+            modifier = Modifier
+                .fillMaxSize()
+                .graphicsLayer { clip = false },
+            contentPadding = PaddingValues(
+                start = horizontalPadding,
+                end = horizontalPadding,
+                top = 16.dp,
+                bottom = 0.dp,
+            ),
+            horizontalArrangement = Arrangement.Center,
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            if (headerContent != null) {
+                item(
+                    key = "external-header",
+                    span = { GridItemSpan(maxLineSpan) },
+                ) {
+                    FullBleedGridHeader(
+                        viewportWidth = viewportWidth,
+                        content = headerContent,
+                    )
+                }
+            }
+
+            iconSections.forEach { section ->
+                item(
+                    key = "header-${section.title}",
+                    span = { GridItemSpan(maxLineSpan) },
+                ) {
+                    MaterialWipeIconSectionHeaderV2(section)
+                }
+                items(
+                    items = section.icons,
+                    key = { iconPair -> "${section.title}-${iconPair.label}" },
+                ) { iconPair ->
+                    DiagonalWipeIconGridItem(
+                        iconPair = iconPair,
+                        animationMultiplier = animationMultiplier,
+                        allIconsWiped = allIconsWiped,
+                        isLooping = isLooping,
+                        accentColor = accentColor,
+                        onOpen = { selectedIcon = iconPair },
+                    )
+                }
+                item(
+                    key = "gap-${section.title}",
+                    span = { GridItemSpan(maxLineSpan) },
+                ) {
+                    Spacer(modifier = Modifier.height(20.dp))
+                }
+            }
         }
     }
 
@@ -193,6 +220,38 @@ fun DiagonalWipeIconGridDemo(
             baseAnimationMultiplier = animationMultiplier,
             onDismiss = { selectedIcon = null },
         )
+    }
+}
+
+@Composable
+private fun FullBleedGridHeader(
+    viewportWidth: Dp,
+    content: @Composable () -> Unit,
+) {
+    val density = LocalDensity.current
+    Layout(
+        modifier = Modifier
+            .fillMaxWidth()
+            .graphicsLayer { clip = false },
+        content = content,
+    ) { measurables, constraints ->
+        if (measurables.isEmpty()) {
+            return@Layout layout(constraints.maxWidth, 0) {}
+        }
+
+        val viewportWidthPx = with(density) { viewportWidth.roundToPx() }
+        val targetWidth = viewportWidthPx.coerceAtLeast(constraints.maxWidth)
+        val childConstraints = constraints.copy(
+            minWidth = targetWidth,
+            maxWidth = targetWidth,
+        )
+        val placeable = measurables.first().measure(childConstraints)
+        val parentWidth = constraints.maxWidth
+        val xOffset = -((targetWidth - parentWidth) / 2)
+
+        layout(parentWidth, placeable.height) {
+            placeable.placeRelative(xOffset, 0)
+        }
     }
 }
 
@@ -1274,6 +1333,14 @@ internal fun DiagonalWipeIconGridItem(
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
     val isPressed by interactionSource.collectIsPressedAsState()
+    val effectiveHover = isHovered
+    var hasLoadedWipedPainter by remember { mutableStateOf(false) }
+
+    LaunchedEffect(effectiveHover, isLooping) {
+        if (effectiveHover || isLooping) {
+            hasLoadedWipedPainter = true
+        }
+    }
 
     // Scale on press
     val scale by animateFloatAsState(
@@ -1289,7 +1356,7 @@ internal fun DiagonalWipeIconGridItem(
     val iconBgColor by animateColorAsState(
         targetValue = when {
             isPressed -> accentColor.copy(alpha = 0.2f)
-            isHovered -> accentColor.copy(alpha = 0.12f)
+            effectiveHover -> accentColor.copy(alpha = 0.12f)
             else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
         },
         animationSpec = tween(200),
@@ -1300,7 +1367,7 @@ internal fun DiagonalWipeIconGridItem(
     val iconBorderColor by animateColorAsState(
         targetValue = when {
             isPressed -> accentColor
-            isHovered -> accentColor.copy(alpha = 0.5f)
+            effectiveHover -> accentColor.copy(alpha = 0.5f)
             else -> Color.Transparent
         },
         animationSpec = tween(200),
@@ -1330,21 +1397,28 @@ internal fun DiagonalWipeIconGridItem(
                 .clip(RoundedCornerShape(20.dp))
                 .background(iconBgColor)
                 .border(
-                    width = if (isHovered || isPressed) 1.5.dp else 0.dp,
+                    width = if (effectiveHover || isPressed) 1.5.dp else 0.dp,
                     color = iconBorderColor,
                     shape = RoundedCornerShape(20.dp)
                 )
                 .padding(18.dp),
             contentAlignment = Alignment.Center
         ) {
+            val basePainter = iconPair.enabledIcon.painter()
+            val wipedPainter = if (hasLoadedWipedPainter || effectiveHover || isLooping) {
+                iconPair.disabledIcon.painter()
+            } else {
+                basePainter
+            }
+            val shouldWipe = if (isLooping) allIconsWiped else effectiveHover
             // Stiffness: lower = slower. Slow mode uses even lower stiffness
             val stiffness =
                 if (animationMultiplier > 1f) Spring.StiffnessVeryLow else Spring.StiffnessLow
 
             DiagonalWipeIcon(
-                isWiped = if (isLooping) allIconsWiped else isHovered,
-                basePainter = iconPair.enabledIcon.painter(),
-                wipedPainter = iconPair.disabledIcon.painter(),
+                isWiped = shouldWipe,
+                basePainter = basePainter,
+                wipedPainter = wipedPainter,
                 baseTint = MaterialTheme.colorScheme.primary,
                 wipedTint = MaterialTheme.colorScheme.secondary,
                 contentDescription = materialWipeIconLabel(iconPair.label),
@@ -1362,11 +1436,11 @@ internal fun DiagonalWipeIconGridItem(
         Text(
             text = materialWipeIconLabel(iconPair.label),
             style = MaterialTheme.typography.bodyMedium.copy(
-                fontWeight = if (isHovered) FontWeight.SemiBold else FontWeight.Medium
+                fontWeight = if (effectiveHover) FontWeight.SemiBold else FontWeight.Medium
             ),
             color = when {
                 isPressed -> accentColor
-                isHovered -> MaterialTheme.colorScheme.onSurface
+                effectiveHover -> MaterialTheme.colorScheme.onSurface
                 else -> MaterialTheme.colorScheme.onSurfaceVariant
             },
             maxLines = 1,
