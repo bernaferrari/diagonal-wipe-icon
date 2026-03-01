@@ -1,8 +1,8 @@
 package com.bernaferrari.diagonalwipeicon
 
 import androidx.compose.ui.ExperimentalComposeUiApi
-import com.bernaferrari.diagonalwipeicon.demo.App
 import androidx.compose.ui.window.ComposeViewport
+import com.bernaferrari.diagonalwipeicon.demo.App
 import kotlinx.browser.document
 import kotlinx.browser.window
 import org.w3c.dom.HTMLCanvasElement

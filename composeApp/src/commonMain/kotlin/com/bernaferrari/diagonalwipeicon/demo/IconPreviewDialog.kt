@@ -1,11 +1,5 @@
 package com.bernaferrari.diagonalwipeicon.demo
 
-import com.bernaferrari.diagonalwipeicon.DiagonalWipeIcon
-import com.bernaferrari.diagonalwipeicon.DiagonalWipeIconDefaults
-import com.bernaferrari.diagonalwipeicon.SlowAnimationMultiplier
-import com.bernaferrari.diagonalwipeicon.WipeIconSource
-import com.bernaferrari.diagonalwipeicon.autoPlayDelay
-
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -55,6 +49,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.bernaferrari.diagonalwipeicon.DiagonalWipeIcon
+import com.bernaferrari.diagonalwipeicon.DiagonalWipeIconDefaults
+import com.bernaferrari.diagonalwipeicon.SlowAnimationMultiplier
+import com.bernaferrari.diagonalwipeicon.WipeIconSource
+import com.bernaferrari.diagonalwipeicon.autoPlayDelay
 import kotlinx.coroutines.delay
 
 @Composable
@@ -433,11 +432,14 @@ private fun KotlinCodeText(code: String) {
                 token in keywords -> withStyle(SpanStyle(color = Color(0xFF0077AA))) { append(token) }
                 token.startsWith("\"") && token.endsWith("\"") ->
                     withStyle(SpanStyle(color = Color(0xFF228822))) { append(token) }
+
                 token in composableFunctions ->
                     withStyle(SpanStyle(color = Color(0xFFDD8822))) { append(token) }
+
                 token.startsWith("MaterialTheme.") || token.startsWith("MaterialSymbolIcons.") || token.startsWith(
                     "Modifier."
                 ) -> withStyle(SpanStyle(color = Color(0xFF8855AA))) { append(token) }
+
                 else -> append(token)
             }
         }

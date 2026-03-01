@@ -31,7 +31,7 @@ kotlin {
             }
         }
     }
-    
+
     listOf(
         iosArm64(),
         iosSimulatorArm64()
@@ -41,7 +41,7 @@ kotlin {
             isStatic = true
         }
     }
-    
+
     sourceSets {
         commonMain {
             kotlin.srcDir(layout.buildDirectory.dir("generated/compose/resourceGenerator/kotlin/commonMainResourceAccessors"))

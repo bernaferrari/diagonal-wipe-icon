@@ -90,7 +90,8 @@ internal fun ThemeColorSwatch(
         label = "checkAlpha",
     )
 
-    val checkTint = if (color.swatchLuminance() > 0.5f) Color.Black.copy(alpha = 0.75f) else Color.White
+    val checkTint =
+        if (color.swatchLuminance() > 0.5f) Color.Black.copy(alpha = 0.75f) else Color.White
 
     Box(
         contentAlignment = Alignment.Center,

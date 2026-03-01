@@ -50,75 +50,75 @@
 </head>
 <body>
 <div id="root">
-  <div id="dev-notice"></div>
+    <div id="dev-notice"></div>
 </div>
-  <script>
-  (function () {
-    var isLocalHost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    var forceDebug = new URLSearchParams(window.location.search).get('debug') === '1';
-    if (!isLocalHost && !forceDebug) {
-      return;
-    }
+<script>
+    (function () {
+      var isLocalHost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      var forceDebug = new URLSearchParams(window.location.search).get('debug') === '1';
+      if (!isLocalHost && !forceDebug) {
+        return;
+      }
 
-    window.onerror = function (message, source, line, column, error) {
-      var notice = document.getElementById('dev-notice');
-      if (!notice) {
-        return;
-      }
-      notice.style.display = 'block';
-      notice.style.whiteSpace = 'pre-wrap';
-      notice.textContent = String(message) +
-        (error && error.stack ? ('\n\n' + error.stack) : '') +
-        (source ? ('\n' + source + ':' + line + ':' + column) : '');
-    };
-
-    window.addEventListener('error', function (event) {
-      var notice = document.getElementById('dev-notice');
-      if (!notice) {
-        return;
-      }
-      notice.style.display = 'block';
-      var error = event.error;
-      var message = event.error ? event.error.message : event.message;
-      notice.textContent = 'JS runtime error: ' + message;
-      if (error && error.stack) {
-        notice.textContent += '\n\n' + error.stack;
-      }
-    });
-
-    window.addEventListener('unhandledrejection', function (event) {
-      var notice = document.getElementById('dev-notice');
-      if (!notice) {
-        return;
-      }
-      notice.style.display = 'block';
-      notice.textContent = 'Unhandled promise rejection: ' + String(event.reason);
-      if (event.reason && event.reason.stack) {
-        notice.textContent += '\n\n' + event.reason.stack;
-      }
-    });
-
-    window.addEventListener('load', function () {
-      var notice = document.getElementById('dev-notice');
-      if (!notice) {
-        return;
-      }
-      if (notice.style.display === 'block') {
-        return;
-      }
-      notice.style.display = 'block';
-      notice.style.color = '#0a4b38';
-      notice.textContent = 'Kotlin/JS bundle loaded. canvas count=' + document.getElementsByTagName('canvas').length;
-      setTimeout(function () {
-        if (notice.textContent.indexOf('Kotlin/JS bundle loaded') === 0 && document.getElementsByTagName('canvas').length === 0) {
-          notice.textContent = 'Bundle loaded but no canvas/root nodes were attached.';
-        } else {
-          notice.style.display = 'none';
+      window.onerror = function (message, source, line, column, error) {
+        var notice = document.getElementById('dev-notice');
+        if (!notice) {
+          return;
         }
-      }, 1000);
-    });
-  })();
-  </script>
+        notice.style.display = 'block';
+        notice.style.whiteSpace = 'pre-wrap';
+        notice.textContent = String(message) +
+          (error && error.stack ? ('\n\n' + error.stack) : '') +
+          (source ? ('\n' + source + ':' + line + ':' + column) : '');
+      };
+
+      window.addEventListener('error', function (event) {
+        var notice = document.getElementById('dev-notice');
+        if (!notice) {
+          return;
+        }
+        notice.style.display = 'block';
+        var error = event.error;
+        var message = event.error ? event.error.message : event.message;
+        notice.textContent = 'JS runtime error: ' + message;
+        if (error && error.stack) {
+          notice.textContent += '\n\n' + error.stack;
+        }
+      });
+
+      window.addEventListener('unhandledrejection', function (event) {
+        var notice = document.getElementById('dev-notice');
+        if (!notice) {
+          return;
+        }
+        notice.style.display = 'block';
+        notice.textContent = 'Unhandled promise rejection: ' + String(event.reason);
+        if (event.reason && event.reason.stack) {
+          notice.textContent += '\n\n' + event.reason.stack;
+        }
+      });
+
+      window.addEventListener('load', function () {
+        var notice = document.getElementById('dev-notice');
+        if (!notice) {
+          return;
+        }
+        if (notice.style.display === 'block') {
+          return;
+        }
+        notice.style.display = 'block';
+        notice.style.color = '#0a4b38';
+        notice.textContent = 'Kotlin/JS bundle loaded. canvas count=' + document.getElementsByTagName('canvas').length;
+        setTimeout(function () {
+          if (notice.textContent.indexOf('Kotlin/JS bundle loaded') === 0 && document.getElementsByTagName('canvas').length === 0) {
+            notice.textContent = 'Bundle loaded but no canvas/root nodes were attached.';
+          } else {
+            notice.style.display = 'none';
+          }
+        }, 1000);
+      });
+    })();
+</script>
 <script src="diagonal-wipe-icon.js"></script>
 </body>
 </html>

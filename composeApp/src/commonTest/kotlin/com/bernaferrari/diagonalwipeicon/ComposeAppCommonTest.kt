@@ -71,7 +71,10 @@ class ComposeAppCommonTest {
 
         assertEquals(width, wipeTravelDistance(width, height, WipeDirection.LeftToRight))
         assertEquals(height, wipeTravelDistance(width, height, WipeDirection.TopToBottom))
-        assertEquals(width + height, wipeTravelDistance(width, height, WipeDirection.TopLeftToBottomRight))
+        assertEquals(
+            width + height,
+            wipeTravelDistance(width, height, WipeDirection.TopLeftToBottomRight)
+        )
     }
 
     @Test
@@ -81,11 +84,21 @@ class ComposeAppCommonTest {
 
         assertEquals(
             null,
-            buildWipeBoundaryLine(width, height, progress = 0f, direction = WipeDirection.LeftToRight),
+            buildWipeBoundaryLine(
+                width,
+                height,
+                progress = 0f,
+                direction = WipeDirection.LeftToRight
+            ),
         )
         assertEquals(
             null,
-            buildWipeBoundaryLine(width, height, progress = 1f, direction = WipeDirection.LeftToRight),
+            buildWipeBoundaryLine(
+                width,
+                height,
+                progress = 1f,
+                direction = WipeDirection.LeftToRight
+            ),
         )
 
         val middle = buildWipeBoundaryLine(
@@ -109,5 +122,6 @@ private class TaggedSpec(
     override fun <V : AnimationVector> vectorize(
         converter: TwoWayConverter<Float, V>,
     ): VectorizedFiniteAnimationSpec<V> = delegate.vectorize(converter)
+
     override fun toString(): String = "TaggedSpec($id)"
 }

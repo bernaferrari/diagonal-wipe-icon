@@ -1,19 +1,8 @@
 package com.bernaferrari.diagonalwipeicon.demo
 
-import com.bernaferrari.diagonalwipeicon.DiagonalWipeIcon
-import com.bernaferrari.diagonalwipeicon.DiagonalWipeIconAtProgress
-import com.bernaferrari.diagonalwipeicon.DiagonalWipeIconDefaults
-import com.bernaferrari.diagonalwipeicon.DiagonalWipeMotion
-import com.bernaferrari.diagonalwipeicon.SlowAnimationMultiplier
-import com.bernaferrari.diagonalwipeicon.WipeDirection
-import com.bernaferrari.diagonalwipeicon.WipeIconSource
-import com.bernaferrari.diagonalwipeicon.autoPlayDelay
-import com.bernaferrari.diagonalwipeicon.buildWipeBoundaryLine
-import com.bernaferrari.diagonalwipeicon.motionSpec
-
 import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.Canvas
@@ -59,6 +48,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.bernaferrari.diagonalwipeicon.DiagonalWipeIconAtProgress
+import com.bernaferrari.diagonalwipeicon.DiagonalWipeIconDefaults
+import com.bernaferrari.diagonalwipeicon.DiagonalWipeMotion
+import com.bernaferrari.diagonalwipeicon.SlowAnimationMultiplier
+import com.bernaferrari.diagonalwipeicon.WipeDirection
+import com.bernaferrari.diagonalwipeicon.WipeIconSource
+import com.bernaferrari.diagonalwipeicon.autoPlayDelay
+import com.bernaferrari.diagonalwipeicon.buildWipeBoundaryLine
+import com.bernaferrari.diagonalwipeicon.motionSpec
 import kotlinx.coroutines.delay
 
 private data class WipeDirectionOption(

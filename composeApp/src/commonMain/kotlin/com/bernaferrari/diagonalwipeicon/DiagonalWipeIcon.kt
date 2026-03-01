@@ -2,8 +2,8 @@ package com.bernaferrari.diagonalwipeicon
 
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.Easing
-import androidx.compose.animation.core.FiniteAnimationSpec
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.FiniteAnimationSpec
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloat
@@ -14,9 +14,10 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -33,7 +34,6 @@ import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 
@@ -303,8 +303,8 @@ internal fun DiagonalWipeIconAtProgress(
                 direction = motion.direction,
             )
             val adjustedProgress = (
-                (clampedProgress * travelDistance + motion.seamOverlapPx) / travelDistance
-            ).coerceIn(0f, 1f)
+                    (clampedProgress * travelDistance + motion.seamOverlapPx) / travelDistance
+                    ).coerceIn(0f, 1f)
 
             buildWipeRevealPath(
                 path = revealPath,
@@ -609,6 +609,7 @@ private fun clipRectangleWithHalfPlane(
                     )
                 }
             }
+
             !prevInside && currentInside -> {
                 val denominator = prevValue - currentValue
                 if (kotlin.math.abs(denominator) >= eps) {
