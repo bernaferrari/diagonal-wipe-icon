@@ -27,6 +27,5 @@ internal val themeSeedOptions = listOf(
     ThemeSeed("Gold", Color(0xFFFFD700), PaletteStyle.Expressive),
     ThemeSeed("Mint", Color(0xFF00FA9A), PaletteStyle.Expressive),
     ThemeSeed("Azure", Color(0xFF007FFF), PaletteStyle.Expressive),
-    ThemeSeed("Rose", Color(0xFFFF007F), PaletteStyle.Expressive),
     ThemeSeed("Slate", Color(0xFF708090), PaletteStyle.Neutral),
 )
