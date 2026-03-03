@@ -131,13 +131,6 @@ internal val coreMaterialWipeIconCatalog = listOf(
     ),
     MaterialWipeIconPair("Devices", MaterialSymbolIcons.Devices, MaterialSymbolIcons.DevicesOff),
     MaterialWipeIconPair(
-        "Desktop Windows",
-        MaterialSymbolIcons.DesktopWindows,
-        MaterialSymbolIcons.DesktopAccessDisabled,
-        enabledCodeIconName = "DesktopWindows",
-        disabledCodeIconName = "DesktopAccessDisabled",
-    ),
-    MaterialWipeIconPair(
         "Directions",
         MaterialSymbolIcons.Directions,
         MaterialSymbolIcons.DirectionsOff
@@ -661,6 +654,13 @@ internal val knownProblemsMaterialWipeIconCatalog = listOf(
         MaterialSymbolIcons.HearingDisabled,
         enabledCodeIconName = "Hearing",
         disabledCodeIconName = "HearingDisabled",
+    ),
+    MaterialWipeIconPair(
+        "Desktop Windows",
+        MaterialSymbolIcons.DesktopWindows,
+        MaterialSymbolIcons.DesktopAccessDisabled,
+        enabledCodeIconName = "DesktopWindows",
+        disabledCodeIconName = "DesktopAccessDisabled",
     ),
     MaterialWipeIconPair("Bedtime", MaterialSymbolIcons.Bedtime, MaterialSymbolIcons.BedtimeOff),
     MaterialWipeIconPair(
