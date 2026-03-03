@@ -244,13 +244,6 @@ internal fun DiagonalWipeIconGridItem(
     val isHovered by interactionSource.collectIsHoveredAsState()
     val isPressed by interactionSource.collectIsPressedAsState()
     val effectiveHover = isHovered
-    var hasLoadedWipedPainter by remember { mutableStateOf(false) }
-
-    LaunchedEffect(effectiveHover, isLooping) {
-        if (effectiveHover || isLooping) {
-            hasLoadedWipedPainter = true
-        }
-    }
 
     val scale by animateFloatAsState(
         targetValue = if (isPressed) 0.95f else 1f,
@@ -310,11 +303,7 @@ internal fun DiagonalWipeIconGridItem(
             contentAlignment = Alignment.Center
         ) {
             val basePainter = iconPair.enabledIcon.painter()
-            val wipedPainter = if (hasLoadedWipedPainter || effectiveHover || isLooping) {
-                iconPair.disabledIcon.painter()
-            } else {
-                basePainter
-            }
+            val wipedPainter = iconPair.disabledIcon.painter()
             val shouldWipe = if (isLooping) allIconsWiped else effectiveHover
             val stiffness =
                 if (animationMultiplier > 1f) Spring.StiffnessVeryLow else Spring.StiffnessLow
