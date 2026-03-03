@@ -97,6 +97,7 @@ fun App() {
                         titleAlpha = titleAlpha,
                         isDark = isDark,
                         onToggleDark = { isDark = !isDark },
+                        onOpenX = { uriHandler.openUri("https://x.com/bernaferrari") },
                         onOpenGitHub = { uriHandler.openUri("https://github.com/bernaferrari/diagonal-wipe-icon") },
                     )
                 },

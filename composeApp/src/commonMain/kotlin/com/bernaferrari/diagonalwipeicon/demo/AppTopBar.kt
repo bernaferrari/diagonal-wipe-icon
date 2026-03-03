@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
@@ -30,6 +31,7 @@ internal fun AnimatedTopBar(
     titleAlpha: Float,
     isDark: Boolean,
     onToggleDark: () -> Unit,
+    onOpenX: () -> Unit,
     onOpenGitHub: () -> Unit,
 ) {
     TopAppBar(
@@ -49,6 +51,18 @@ internal fun AnimatedTopBar(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(end = 8.dp)
             ) {
+                IconButton(
+                    onClick = onOpenX,
+                    modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
+                ) {
+                    Icon(
+                        imageVector = XIcon,
+                        contentDescription = "X",
+                        modifier = Modifier.size(22.dp),
+                        tint = MaterialTheme.colorScheme.onBackground
+                    )
+                }
+
                 IconButton(
                     onClick = onOpenGitHub,
                     modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
@@ -117,6 +131,40 @@ private val GitHubIcon: ImageVector = ImageVector.Builder(
         curveTo(15f, 23.129f, 15.192f, 23.504f, 15.801f, 23.386f)
         curveTo(20.566f, 21.797f, 24f, 17.3f, 24f, 12f)
         curveTo(24f, 5.373f, 18.627f, 0f, 12f, 0f)
+        close()
+    }
+}.build()
+
+private val XIcon: ImageVector = ImageVector.Builder(
+    name = "X",
+    defaultWidth = 24.dp,
+    defaultHeight = 24.dp,
+    viewportWidth = 24f,
+    viewportHeight = 24f
+).apply {
+    path(
+        fill = SolidColor(Color(0xFF000000)),
+        pathFillType = PathFillType.EvenOdd
+    ) {
+        moveTo(18.901f, 1.153f)
+        horizontalLineTo(22.581f)
+        lineTo(14.541f, 10.343f)
+        lineTo(24f, 22.847f)
+        horizontalLineTo(16.594f)
+        lineTo(10.794f, 15.263f)
+        lineTo(4.154f, 22.847f)
+        horizontalLineTo(0.47f)
+        lineTo(9.07f, 13.017f)
+        lineTo(0f, 1.154f)
+        horizontalLineTo(7.594f)
+        lineTo(12.837f, 8.086f)
+        lineTo(18.9f, 1.153f)
+        close()
+        moveTo(17.611f, 20.647f)
+        horizontalLineTo(19.65f)
+        lineTo(6.486f, 3.24f)
+        horizontalLineTo(4.298f)
+        lineTo(17.611f, 20.647f)
         close()
     }
 }.build()
