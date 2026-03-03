@@ -101,13 +101,6 @@ internal val coreMaterialWipeIconCatalog = listOf(
         MaterialSymbolIcons.ContentPasteOff
     ),
     MaterialWipeIconPair(
-        "Contrast",
-        MaterialSymbolIcons.Contrast,
-        MaterialSymbolIcons.ContrastRtlOff,
-        enabledCodeIconName = "Contrast",
-        disabledCodeIconName = "ContrastRtlOff",
-    ),
-    MaterialWipeIconPair(
         "Conversion Path",
         MaterialSymbolIcons.ConversionPath,
         MaterialSymbolIcons.ConversionPathOff
@@ -661,6 +654,13 @@ internal val knownProblemsMaterialWipeIconCatalog = listOf(
         MaterialSymbolIcons.DesktopAccessDisabled,
         enabledCodeIconName = "DesktopWindows",
         disabledCodeIconName = "DesktopAccessDisabled",
+    ),
+    MaterialWipeIconPair(
+        "Contrast",
+        MaterialSymbolIcons.Contrast,
+        MaterialSymbolIcons.ContrastRtlOff,
+        enabledCodeIconName = "Contrast",
+        disabledCodeIconName = "ContrastRtlOff",
     ),
     MaterialWipeIconPair("Bedtime", MaterialSymbolIcons.Bedtime, MaterialSymbolIcons.BedtimeOff),
     MaterialWipeIconPair(
