@@ -33,11 +33,9 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -54,7 +52,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bernaferrari.diagonalwipeicon.DiagonalWipeIcon
 import com.bernaferrari.diagonalwipeicon.DiagonalWipeIconDefaults
-import kotlinx.coroutines.delay
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -130,6 +127,19 @@ private fun HeroTitle() {
 private fun HeroIconShowcase(
     onIconClick: (MaterialWipeIconPair) -> Unit,
 ) {
+    val phaseStepMillis = 200f
+    val wipeToggleMillis = 1200f
+    val wipeCycleMillis = wipeToggleMillis * 2f
+    val heroClock by rememberInfiniteTransition(label = "heroIconClock").animateFloat(
+        initialValue = 0f,
+        targetValue = wipeCycleMillis,
+        animationSpec = infiniteRepeatable(
+            animation = tween(wipeCycleMillis.toInt(), easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "heroIconPhase"
+    )
+
     // Use actual icon pairs from the catalog for consistency
     val iconPairs = remember {
         listOf(
@@ -169,11 +179,17 @@ private fun HeroIconShowcase(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 visibleIcons.forEachIndexed { index, iconPair ->
-                    HeroAnimatedIcon(
-                        iconPair = iconPair,
-                        delayMillis = (startIndex + index) * 200,
-                        onClick = { onIconClick(iconPair) }
-                    )
+                    val phaseOffsetMillis = (startIndex + index) * phaseStepMillis
+                    val phasedClock =
+                        (wipeCycleMillis + heroClock - phaseOffsetMillis) % wipeCycleMillis
+                    val isWiped = phasedClock < wipeToggleMillis
+                    key(iconPair.label) {
+                        HeroAnimatedIcon(
+                            iconPair = iconPair,
+                            isWiped = isWiped,
+                            onClick = { onIconClick(iconPair) }
+                        )
+                    }
                 }
             }
         }
@@ -183,23 +199,12 @@ private fun HeroIconShowcase(
 @Composable
 private fun HeroAnimatedIcon(
     iconPair: MaterialWipeIconPair,
-    delayMillis: Int,
+    isWiped: Boolean,
     onClick: () -> Unit,
 ) {
-    var isWiped by remember { mutableStateOf(false) }
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
     val isPressed by interactionSource.collectIsPressedAsState()
-
-    LaunchedEffect(Unit) {
-        delay(delayMillis.toLong())
-        while (true) {
-            isWiped = true
-            delay(1200)
-            isWiped = false
-            delay(1200)
-        }
-    }
 
     val scale by animateFloatAsState(
         targetValue = when {
