@@ -11,8 +11,6 @@
 
 </div>
 
----
-
 ## 📖 What Is This?
 
 Apple's **SF Symbols** makes it easy to add wipe icon transitions to iOS apps. In Compose, achieving this built-in behavior is tedious—it often requires creating animated drawables manually or relying on third-party editors every single time. 
@@ -23,8 +21,6 @@ Apple's **SF Symbols** makes it easy to add wipe icon transitions to iOS apps. I
 - ✨ **Anywhere** you want polished micro-interactions
 
 **Zero dependencies. Just copy a single file.**
-
----
 
 ## � Quick Start
 
@@ -50,8 +46,6 @@ fun FavoriteButton() {
 }
 ```
 
----
-
 ## 🎨 Customization
 You can deeply customize the transition feel using `motion` parameter or custom `Painter`s.
 
@@ -75,11 +69,15 @@ DiagonalWipeIcon(
 ```
 *Note: Overloads exist for both `ImageVector` and `Painter`.*
 
----
+<div align="center">
 
-<details>
-<summary><b>⚡ Performance & Under The Hood</b></summary>
-<br>
+<a href="https://bernaferrari.github.io/diagonal-wipe-icon/"><img src="assets/how-it-works-mini.webp" width="680" alt="Diagonal wipe icon animation in action"></a>
+
+<a href="https://bernaferrari.github.io/diagonal-wipe-icon/"><img src="assets/how-it-works.png" width="680" alt="Diagonal wipe icon static preview"></a>
+
+</div>
+
+## ⚡ Performance & Under The Hood
 
 A moving clip path reveals one icon while concealing the other through smooth interpolations over 8 supported directions.
 
@@ -93,11 +91,7 @@ A moving clip path reveals one icon while concealing the other through smooth in
 - ✅ Tint filters cached and reused
 - ✅ Path buffers pooled across frames
 
-</details>
-
-<details>
-<summary><b>❓ FAQ</b></summary>
-<br>
+## ❓ FAQ
 
 - **Can I use my own icons?** Yes. Any `ImageVector` or `Painter`.
 - **Does it work on iOS?** Yes, it works seamlessly in Compose Multiplatform `commonMain`.
@@ -105,10 +99,6 @@ A moving clip path reveals one icon while concealing the other through smooth in
 - **Run the Demo Locally:**
   - Web: `./gradlew :composeApp:jsBrowserDevelopmentRun`
   - Android: `./gradlew :androidApp:installDebug`
-
-</details>
-
----
 
 ## 📝 License
 MIT © [Bernardo Ferrari](https://github.com/bernaferrari)
