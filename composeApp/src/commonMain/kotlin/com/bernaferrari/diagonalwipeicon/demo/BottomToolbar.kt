@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -52,30 +53,36 @@ internal fun BottomToolbar(
         expandedShadowElevation = 4.dp,
         collapsedShadowElevation = 1.dp,
         leadingContent = {
-            Row(
-                modifier = Modifier.horizontalScroll(rememberScrollState()),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(0.dp)
-            ) {
-                themeSeedOptions.forEachIndexed { index, seed ->
-                    ThemeColorSwatch(
-                        label = seed.name,
-                        color = seed.color,
-                        isSelected = index == selectedSeedIndex,
-                        onClick = { onSeedSelected(index) }
-                    )
+            BoxWithConstraints {
+                val showSeedDivider = maxWidth >= 560.dp
+
+                Row(
+                    modifier = Modifier.horizontalScroll(rememberScrollState()),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(0.dp)
+                ) {
+                    themeSeedOptions.forEachIndexed { index, seed ->
+                        ThemeColorSwatch(
+                            label = seed.name,
+                            color = seed.color,
+                            isSelected = index == selectedSeedIndex,
+                            onClick = { onSeedSelected(index) }
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    if (showSeedDivider) {
+                        Box(
+                            modifier = Modifier
+                                .height(24.dp)
+                                .width(1.dp)
+                                .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                        )
+
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
                 }
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                Box(
-                    modifier = Modifier
-                        .height(24.dp)
-                        .width(1.dp)
-                        .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                )
-
-                Spacer(modifier = Modifier.width(8.dp))
             }
         },
         trailingContent = {
@@ -142,6 +149,7 @@ internal fun BottomToolbar(
                     ),
                 )
             }
+            Spacer(modifier = Modifier.width(8.dp))
         }
     }
 }
