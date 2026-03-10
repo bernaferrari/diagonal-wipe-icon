@@ -51,12 +51,8 @@ import androidx.compose.ui.window.Dialog
 import com.bernaferrari.diagonalwipeicon.DiagonalWipeIconAtProgress
 import com.bernaferrari.diagonalwipeicon.DiagonalWipeIconDefaults
 import com.bernaferrari.diagonalwipeicon.DiagonalWipeMotion
-import com.bernaferrari.diagonalwipeicon.SlowAnimationMultiplier
 import com.bernaferrari.diagonalwipeicon.WipeDirection
-import com.bernaferrari.diagonalwipeicon.WipeIconSource
-import com.bernaferrari.diagonalwipeicon.autoPlayDelay
 import com.bernaferrari.diagonalwipeicon.buildWipeBoundaryLine
-import com.bernaferrari.diagonalwipeicon.motionSpec
 import kotlinx.coroutines.delay
 
 private data class WipeDirectionOption(
@@ -77,6 +73,7 @@ private val howItWorksDirectionOptions = listOf(
 
 private val howItWorksDirectionLabels =
     howItWorksDirectionOptions.associate { it.direction to it.label }
+private const val HowItWorksAnimationMultiplier = SlowAnimationMultiplier
 
 @Composable
 internal fun HowItWorksDialog(
@@ -121,7 +118,7 @@ internal fun HowItWorksDialog(
                     direction = direction,
                     tileHeight = 100.dp,
                     squareSize = 64.dp,
-                    animationMultiplier = SlowAnimationMultiplier,
+                    animationMultiplier = HowItWorksAnimationMultiplier,
                 )
                 Text(
                     text = "Use two icons and one animated mask. It is much easier and faster than building and maintaining custom vector paths by hand.",
@@ -282,7 +279,9 @@ private fun rememberWipeProgress(
 ): Float {
     val transition = updateTransition(targetState = isWiped, label = "howItWorksSharedWipe")
     val progress by transition.animateFloat(
-        transitionSpec = { motionSpec(false isTransitioningTo true, motion) },
+        transitionSpec = {
+            if (false isTransitioningTo true) motion.wipeInSpec else motion.wipeOutSpec
+        },
         label = "howItWorksSharedProgress",
     ) { wiped ->
         if (wiped) 1f else 0f
@@ -571,13 +570,13 @@ private fun MaskPreviewWithIcons(
 @Composable
 private fun rememberLoopingWipe(): Boolean {
     var blocked by remember { mutableStateOf(false) }
-    val enableDelay = autoPlayDelay(
+    val enableDelay = scaledDuration(
         DiagonalWipeIconDefaults.WipeInDurationMillis,
-        SlowAnimationMultiplier,
+        HowItWorksAnimationMultiplier,
     )
-    val disableDelay = autoPlayDelay(
+    val disableDelay = scaledDuration(
         DiagonalWipeIconDefaults.WipeOutDurationMillis,
-        SlowAnimationMultiplier,
+        HowItWorksAnimationMultiplier,
     )
 
     LaunchedEffect(enableDelay, disableDelay) {

@@ -5,6 +5,8 @@
 # Diagonal Wipe Icon
 **One-file icon transition component for Compose Multiplatform**
 
+Also available for Flutter as a package in [`flutter/`](flutter) (`diagonal_wipe_icon_flutter`).
+
 <a href="https://bernaferrari.github.io/diagonal-wipe-icon/"><img src="assets/preview.png" width="680" alt="Diagonal wipe icon static preview"></a>
 
 **[🚀 Live Demo](https://bernaferrari.github.io/diagonal-wipe-icon/)**
@@ -20,27 +22,39 @@ Apple's **SF Symbols** makes it easy to add wipe icon transitions to iOS apps. I
 - ⚙️ **Settings screens** with stateful icons
 - ✨ **Anywhere** you want polished micro-interactions
 
-**Zero dependencies. Just copy a single file.**
+**Use it as a library or just copy a single file.**
 
-## � Quick Start
+## Quick Start
 
-Grab the file:
-```bash
-curl -O https://raw.githubusercontent.com/bernaferrari/diagonal-wipe-icon/main/composeApp/src/commonMain/kotlin/com/bernaferrari/diagonalwipeicon/DiagonalWipeIcon.kt
+Add it as a library:
+```kotlin
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation("io.github.bernaferrari:diagonal-wipe-icon:0.1.0")
+}
 ```
-Drop it into your `commonMain/kotlin` folder, and wrap it in your preferred click listener:
+
+If you prefer the one-file version, grab it directly:
+
+```bash
+curl -O https://raw.githubusercontent.com/bernaferrari/diagonal-wipe-icon/main/diagonalwipeicon/src/commonMain/kotlin/com/bernaferrari/diagonalwipeicon/DiagonalWipeIcon.kt
+```
+Drop it into your `commonMain/kotlin` folder and use it like this:
 
 ```kotlin
 @Composable
-fun FavoriteButton() {
-    var isFavorite by remember { mutableStateOf(false) }
+fun VisibilityButton() {
+    var isVisible by remember { mutableStateOf(true) }
 
-    IconButton(onClick = { isFavorite = !isFavorite }) {
+    IconButton(onClick = { isVisible = !isVisible }) {
         DiagonalWipeIcon(
-            isWiped = !isFavorite,
-            baseIcon = Icons.Outlined.Favorite,
-            wipedIcon = Icons.Outlined.FavoriteBorder,
-            contentDescription = "Favorite Toggle"
+            isWiped = !isVisible,
+            baseIcon = Icons.Outlined.Visibility,
+            wipedIcon = Icons.Outlined.VisibilityOff,
+            contentDescription = "Visibility Toggle"
         )
     }
 }
@@ -95,10 +109,8 @@ A moving clip path reveals one icon while concealing the other through smooth in
 
 - **Can I use my own icons?** Yes. Any `ImageVector` or `Painter`.
 - **Does it work on iOS?** Yes, it works seamlessly in Compose Multiplatform `commonMain`.
+- **How do I add it as a dependency?** Use `io.github.bernaferrari:diagonal-wipe-icon`.
 - **What about accessibility?** Pass `contentDescription` and it respects semantics.
 - **Run the Demo Locally:**
   - Web: `./gradlew :composeApp:jsBrowserDevelopmentRun`
   - Android: `./gradlew :androidApp:installDebug`
-
-## 📝 License
-MIT © [Bernardo Ferrari](https://github.com/bernaferrari)

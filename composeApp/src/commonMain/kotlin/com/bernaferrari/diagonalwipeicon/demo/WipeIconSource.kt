@@ -1,4 +1,4 @@
-package com.bernaferrari.diagonalwipeicon
+package com.bernaferrari.diagonalwipeicon.demo
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable

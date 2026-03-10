@@ -25,9 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
 import com.bernaferrari.diagonalwipeicon.DiagonalWipeIconDefaults
-import com.bernaferrari.diagonalwipeicon.SlowAnimationMultiplier
 import com.bernaferrari.diagonalwipeicon.WipeDirection
-import com.bernaferrari.diagonalwipeicon.autoPlayDelay
 import com.materialkolor.DynamicMaterialTheme
 import com.materialkolor.dynamiccolor.ColorSpec
 import kotlinx.coroutines.delay

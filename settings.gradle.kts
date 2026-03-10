@@ -32,4 +32,6 @@ dependencyResolutionManagement {
 }
 
 include(":composeApp")
+include(":lib")
+project(":lib").projectDir = file("diagonalwipeicon")
 include(":androidApp")

@@ -1,4 +1,4 @@
-package com.bernaferrari.diagonalwipeicon
+package com.bernaferrari.diagonalwipeicon.demo
 
 import kotlin.math.roundToInt
 

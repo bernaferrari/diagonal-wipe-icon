@@ -248,7 +248,7 @@ fun DiagonalWipeIcon(
 }
 
 @Composable
-internal fun DiagonalWipeIconAtProgress(
+fun DiagonalWipeIconAtProgress(
     progress: Float,
     basePainter: Painter,
     wipedPainter: Painter,
@@ -359,7 +359,7 @@ internal fun motionSpec(
     return if (isWipingIn) motion.wipeInSpec else motion.wipeOutSpec
 }
 
-internal fun buildWipeBoundaryLine(
+fun buildWipeBoundaryLine(
     width: Float,
     height: Float,
     progress: Float,

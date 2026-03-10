@@ -53,7 +53,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bernaferrari.diagonalwipeicon.DiagonalWipeIcon
 import com.bernaferrari.diagonalwipeicon.DiagonalWipeIconDefaults
-import com.bernaferrari.diagonalwipeicon.WipeIconSource
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 
@@ -150,7 +149,7 @@ fun DiagonalWipeIconGridDemo(
                     ) {
                         MaterialWipeIconSectionHeader(
                             section = section,
-                            topPadding = if (sectionIndex == 0) 0.dp else 16.dp,
+                            topPadding = if (sectionIndex == 0) 24.dp else 16.dp,
                         )
                     }
                 }

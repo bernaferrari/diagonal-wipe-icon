@@ -13,7 +13,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
-class ComposeAppCommonTest {
+class DiagonalWipeIconCommonTest {
 
     @Test
     fun motionSpec_usesWipeInSpec_forWipeInTransition() {

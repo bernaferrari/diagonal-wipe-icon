@@ -48,6 +48,7 @@ kotlin {
             kotlin.srcDir(layout.buildDirectory.dir("generated/compose/resourceGenerator/kotlin/commonResClass"))
         }
         commonMain.dependencies {
+            implementation(projects.lib)
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)
@@ -55,11 +56,6 @@ kotlin {
             implementation(libs.compose.ui)
             implementation(libs.compose.components.resources)
             implementation(libs.compose.uiToolingPreview)
-            implementation(libs.androidx.lifecycle.viewmodelCompose)
-            implementation(libs.androidx.lifecycle.runtimeCompose)
-        }
-        commonTest.dependencies {
-            implementation(libs.kotlin.test)
         }
     }
 }

@@ -51,9 +51,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.bernaferrari.diagonalwipeicon.DiagonalWipeIcon
 import com.bernaferrari.diagonalwipeicon.DiagonalWipeIconDefaults
-import com.bernaferrari.diagonalwipeicon.SlowAnimationMultiplier
-import com.bernaferrari.diagonalwipeicon.WipeIconSource
-import com.bernaferrari.diagonalwipeicon.autoPlayDelay
 import kotlinx.coroutines.delay
 
 @Composable
