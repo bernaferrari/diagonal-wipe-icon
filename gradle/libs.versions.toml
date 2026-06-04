@@ -1,15 +1,15 @@
 [versions]
-agp = "9.0.1"
+agp = "9.2.1"
 android-compileSdk = "36"
 android-minSdk = "24"
 android-targetSdk = "36"
-androidx-activity = "1.12.4"
-androidx-lifecycle = "2.10.0-alpha08"
-composeMultiplatform = "1.10.1"
+androidx-activity = "1.13.0"
+androidx-lifecycle = "2.10.0"
+composeMultiplatform = "1.11.1"
 junit = "4.13.2"
-kotlin = "2.3.10"
+kotlin = "2.4.0"
 material3 = "1.10.0-alpha05"
-materialkolor = "5.0.0-alpha06"
+materialkolor = "5.0.0-alpha07"
 mavenPublish = "0.36.0"
 
 [libraries]
