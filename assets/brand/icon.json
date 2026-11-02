@@ -1,0 +1,8 @@
+{
+  "files": [
+    {"path": "composeApp/src/jsMain/resources/favicon.svg", "shape": "rounded", "scale": 1.25},
+    {"path": "composeApp/src/jsMain/resources/favicon.ico", "shape": "rounded", "scale": 1.25},
+    {"path": "composeApp/src/jsMain/resources/apple-touch-icon.png", "size": 180, "shape": "square", "scale": 1.25, "opaque": true},
+    {"path": "assets/brand/icon.png", "size": 512, "shape": "rounded", "scale": 1.25}
+  ]
+}
